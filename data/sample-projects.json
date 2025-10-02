@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "title": "Hack Club's AI Dinosaur Assistant",
+    "description": "Built an AI-powered chatbot that answers questions about dinosaurs AND helps with coding. Because why choose?",
+    "readme": "# Dino Code Helper\n\nCombines my two loves: dinosaurs and programming. Uses GPT-4 to answer dinosaur facts while helping debug your code.\n\n## Features\n- Dinosaur fact database\n- Code debugging\n- Pairs well with coffee\n\n## Tech Stack\n- Python\n- OpenAI API\n- Flask\n- Lots of dinosaur enthusiasm",
+    "repo_url": "https://github.com/hackclub/dino-helper",
+    "demo_url": "https://dino-helper.hackclub.dev",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 87,
+    "sessions_count": 24,
+    "shell_value": 4350,
+    "tags": ["ai", "chatbot", "dinosaurs", "education"],
+    "technologies": ["Python", "OpenAI", "Flask", "React"],
+    "created_at": "2025-06-01T10:00:00Z",
+    "updated_at": "2025-08-15T18:30:00Z",
+    "completed_at": "2025-07-20T14:00:00Z",
+    "featured": true,
+    "views": 1234,
+    "likes": 89
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "title": "Real-time Collaborative Code Editor",
+    "description": "Google Docs but for code. Share a link, code together in real-time. No setup required.",
+    "readme": "# CodeTogether\n\nWanted to pair program with my friend in another timezone. Built this instead of using VS Code Live Share because where's the fun in that?\n\n## Features\n- Real-time collaboration\n- Syntax highlighting for 20+ languages\n- Built-in chat\n- Share with a link\n\n## Tech Stack\n- Next.js\n- Socket.io\n- Monaco Editor\n- Y.js for CRDT",
+    "repo_url": "https://github.com/alexchen/code-together",
+    "demo_url": "https://codetogether.dev",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 64,
+    "sessions_count": 18,
+    "shell_value": 3200,
+    "tags": ["collaboration", "editor", "real-time"],
+    "technologies": ["Next.js", "Socket.io", "TypeScript", "Monaco"],
+    "created_at": "2025-06-03T09:00:00Z",
+    "updated_at": "2025-08-10T16:00:00Z",
+    "completed_at": "2025-07-15T12:00:00Z",
+    "featured": true,
+    "views": 876,
+    "likes": 67
+  },
+  {
+    "id": 3,
+    "user_id": 3,
+    "title": "Generative Art NFT Marketplace",
+    "description": "Create algorithmic art and mint it as NFTs. Each piece is unique and generated on-demand.",
+    "readme": "# ArtGen Market\n\nCombining my love for design and blockchain. Generate unique art pieces using various algorithms.\n\n## Features\n- 10 different art generation algorithms\n- Mint as NFTs on Polygon\n- Gallery showcase\n- Opensea integration\n\n## Tech Stack\n- React + Three.js\n- Solidity smart contracts\n- IPFS for storage\n- Polygon network",
+    "repo_url": "https://github.com/samrivera/artgen",
+    "demo_url": "https://artgen.xyz",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 52,
+    "sessions_count": 15,
+    "shell_value": 2600,
+    "tags": ["art", "nft", "blockchain", "generative"],
+    "technologies": ["React", "Three.js", "Solidity", "Web3"],
+    "created_at": "2025-06-08T11:30:00Z",
+    "updated_at": "2025-08-05T14:20:00Z",
+    "completed_at": "2025-07-25T10:00:00Z",
+    "featured": false,
+    "views": 543,
+    "likes": 42
+  },
+  {
+    "id": 4,
+    "user_id": 4,
+    "title": "Smart Home Dashboard with Arduino",
+    "description": "Control all my smart home devices from a custom-built dashboard. Built the hardware AND software.",
+    "readme": "# HomeHub\n\nBecause paying for smart home hubs is for people with money. Built my own with Arduino and a Raspberry Pi.\n\n## Features\n- Control lights, temperature, music\n- Custom PCB design\n- Voice commands via Google Assistant\n- Energy usage tracking\n\n## Hardware\n- Arduino Mega\n- Raspberry Pi 4\n- Custom PCB\n- Various sensors and relays",
+    "repo_url": "https://github.com/jamieoconnor/homehub",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 43,
+    "sessions_count": 12,
+    "shell_value": 2150,
+    "tags": ["iot", "hardware", "smart-home", "arduino"],
+    "technologies": ["Arduino", "C++", "Python", "React"],
+    "created_at": "2025-06-12T14:00:00Z",
+    "updated_at": "2025-08-01T19:45:00Z",
+    "completed_at": "2025-07-28T16:30:00Z",
+    "featured": false,
+    "views": 421,
+    "likes": 35
+  },
+  {
+    "id": 5,
+    "user_id": 5,
+    "title": "ML-Powered Recipe Recommender",
+    "description": "Tell it what's in your fridge, get recipe recommendations. Uses machine learning to understand your taste.",
+    "readme": "# FridgeChef\n\nTired of wasting food. Built an AI that tells me what to cook based on what's about to expire.\n\n## Features\n- Image recognition for ingredients\n- Personalized recommendations\n- Recipe database with 10,000+ recipes\n- Nutrition tracking\n\n## Tech Stack\n- Python + FastAPI\n- TensorFlow for image recognition\n- Collaborative filtering for recommendations\n- Next.js frontend",
+    "repo_url": "https://github.com/morganli/fridge-chef",
+    "demo_url": "https://fridgechef.app",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 38,
+    "sessions_count": 11,
+    "shell_value": 1900,
+    "tags": ["ml", "food", "computer-vision", "recommendations"],
+    "technologies": ["Python", "TensorFlow", "FastAPI", "Next.js"],
+    "created_at": "2025-06-15T10:15:00Z",
+    "updated_at": "2025-07-30T13:00:00Z",
+    "completed_at": "2025-07-22T11:45:00Z",
+    "featured": false,
+    "views": 389,
+    "likes": 28
+  },
+  {
+    "id": 6,
+    "user_id": 1,
+    "title": "Hack Club Shell Economy Simulator",
+    "description": "Simulate the entire SOM shell economy. Predict shell inflation, track whale movements, become a virtual economist.",
+    "readme": "# Shell Economics\n\nBecause I wanted to understand if shells would experience inflation. Spoiler: they did.\n\n## Features\n- Real-time shell tracking\n- Inflation calculator\n- Whale wallet monitoring\n- Economic predictions\n\n## Tech Stack\n- Python for data analysis\n- PostgreSQL\n- Chart.js for visualizations\n- React dashboard",
+    "repo_url": "https://github.com/hackclub/shell-economics",
+    "demo_url": "https://shell-econ.hackclub.dev",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 31,
+    "sessions_count": 9,
+    "shell_value": 1550,
+    "tags": ["economics", "data-analysis", "simulation"],
+    "technologies": ["Python", "PostgreSQL", "Pandas", "React"],
+    "created_at": "2025-06-20T16:00:00Z",
+    "updated_at": "2025-08-12T10:30:00Z",
+    "featured": true,
+    "views": 678,
+    "likes": 54
+  },
+  {
+    "id": 7,
+    "user_id": 2,
+    "title": "Markdown-Powered Presentation Tool",
+    "description": "Write your slides in Markdown, get beautiful presentations. Like reveal.js but better (fight me).",
+    "readme": "# SlidesMD\n\nPowerPoint is dead. Long live Markdown presentations.\n\n## Features\n- Write slides in Markdown\n- Live preview\n- Beautiful themes\n- Code syntax highlighting\n- Export to PDF\n\n## Tech Stack\n- Svelte\n- Marked.js\n- Prism.js\n- Puppeteer for PDF export",
+    "repo_url": "https://github.com/alexchen/slides-md",
+    "demo_url": "https://slidesmd.dev",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 29,
+    "sessions_count": 8,
+    "shell_value": 1450,
+    "tags": ["presentations", "markdown", "productivity"],
+    "technologies": ["Svelte", "JavaScript", "Puppeteer"],
+    "created_at": "2025-07-01T09:00:00Z",
+    "updated_at": "2025-08-08T15:20:00Z",
+    "featured": false,
+    "views": 312,
+    "likes": 23
+  },
+  {
+    "id": 8,
+    "user_id": 3,
+    "title": "CSS Animation Playground",
+    "description": "Interactive tool to create and export CSS animations. Drag, drop, animate, copy code.",
+    "readme": "# AnimateCSS Pro\n\nBecause CSS animations are hard and I wanted a visual editor.\n\n## Features\n- Visual keyframe editor\n- Real-time preview\n- Export to CSS\n- Animation library\n- Easing function visualizer\n\n## Tech Stack\n- React\n- Framer Motion\n- Monaco Editor\n- Canvas API",
+    "repo_url": "https://github.com/samrivera/animate-css",
+    "demo_url": "https://animatecss.pro",
+    "screenshots": [
+      "/images/shell.png"
+    ],
+    "total_hours": 26,
+    "sessions_count": 7,
+    "shell_value": 1300,
+    "tags": ["css", "animations", "design-tools"],
+    "technologies": ["React", "Framer Motion", "TypeScript"],
+    "created_at": "2025-07-05T13:30:00Z",
+    "updated_at": "2025-08-06T11:00:00Z",
+    "featured": false,
+    "views": 267,
+    "likes": 19
+  }
+]

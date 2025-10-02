@@ -1,0 +1,143 @@
+[
+  {
+    "id": 1,
+    "slack_id": "U012ABC3DEF",
+    "username": "orpheus",
+    "email": "orpheus@hackclub.com",
+    "avatar": "/images/orph_wow_prizes.png",
+    "full_name": "Orpheus",
+    "github_username": "hackclub",
+    "shells_balance": 12500,
+    "shells_earned": 18750,
+    "total_hours_worked": 325,
+    "total_sessions": 89,
+    "projects_count": 12,
+    "rank": 1,
+    "rank_change": 0,
+    "bio": "Building the future with high schoolers. Founder @ Hack Club. Loves dinosaurs and making things.",
+    "location": "San Francisco, CA",
+    "website": "https://hackclub.com",
+    "joined_at": "2025-06-01T00:00:00Z",
+    "badges": [
+      {
+        "id": "founder",
+        "name": "Founder's Badge",
+        "description": "Original Hack Club founder",
+        "icon": "🦕",
+        "rarity": "legendary",
+        "category": "special",
+        "earned_at": "2025-06-01T00:00:00Z"
+      },
+      {
+        "id": "overachiever",
+        "name": "Overachiever",
+        "description": "Earned over 10,000 shells",
+        "icon": "🏆",
+        "rarity": "epic",
+        "category": "milestones",
+        "earned_at": "2025-07-15T10:30:00Z"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "slack_id": "U023BCD4EFG",
+    "username": "CodeCrusader",
+    "email": "crusader@example.com",
+    "avatar": "https://i.pravatar.cc/150?img=1",
+    "full_name": "Alex Chen",
+    "github_username": "alexchen",
+    "shells_balance": 8432,
+    "shells_earned": 11230,
+    "total_hours_worked": 245,
+    "total_sessions": 67,
+    "projects_count": 8,
+    "rank": 2,
+    "rank_change": 1,
+    "bio": "Fullstack dev obsessed with making cool stuff. React, Node, and everything in between.",
+    "location": "Austin, TX",
+    "website": "https://alexchen.dev",
+    "joined_at": "2025-06-02T08:15:00Z",
+    "badges": [
+      {
+        "id": "early-adopter",
+        "name": "Early Adopter",
+        "description": "Joined in the first week",
+        "icon": "⚡",
+        "rarity": "rare",
+        "category": "special",
+        "earned_at": "2025-06-02T08:15:00Z"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "slack_id": "U034CDE5FGH",
+    "username": "PixelPioneer",
+    "email": "pixel@example.com",
+    "avatar": "https://i.pravatar.cc/150?img=2",
+    "full_name": "Sam Rivera",
+    "github_username": "samrivera",
+    "shells_balance": 6789,
+    "shells_earned": 9450,
+    "total_hours_worked": 198,
+    "total_sessions": 52,
+    "projects_count": 6,
+    "rank": 3,
+    "rank_change": -1,
+    "bio": "Designer turned developer. Making pixels dance and code sing.",
+    "location": "Brooklyn, NY",
+    "joined_at": "2025-06-05T14:22:00Z",
+    "badges": []
+  },
+  {
+    "id": 4,
+    "slack_id": "U045DEF6GHI",
+    "username": "ByteBandit",
+    "email": "bandit@example.com",
+    "avatar": "https://i.pravatar.cc/150?img=3",
+    "full_name": "Jamie O'Connor",
+    "github_username": "jamieoconnor",
+    "shells_balance": 5234,
+    "shells_earned": 7890,
+    "total_hours_worked": 167,
+    "total_sessions": 48,
+    "projects_count": 5,
+    "rank": 4,
+    "rank_change": 2,
+    "bio": "Hacking hardware and software. Currently building a robot that makes breakfast.",
+    "location": "Seattle, WA",
+    "joined_at": "2025-06-07T11:00:00Z",
+    "badges": [
+      {
+        "id": "hardware-hero",
+        "name": "Hardware Hero",
+        "description": "Built 3+ hardware projects",
+        "icon": "🔌",
+        "rarity": "rare",
+        "category": "projects",
+        "earned_at": "2025-07-10T16:45:00Z"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "slack_id": "U056EFG7HIJ",
+    "username": "ScriptSorcerer",
+    "email": "sorcerer@example.com",
+    "avatar": "https://i.pravatar.cc/150?img=4",
+    "full_name": "Morgan Li",
+    "github_username": "morganli",
+    "shells_balance": 4567,
+    "shells_earned": 6234,
+    "total_hours_worked": 142,
+    "total_sessions": 39,
+    "projects_count": 4,
+    "rank": 5,
+    "rank_change": 0,
+    "bio": "Python wizard, data scientist, and machine learning enthusiast. Teaching computers to dream.",
+    "location": "Boston, MA",
+    "joined_at": "2025-06-10T09:30:00Z",
+    "badges": []
+  }
+]
