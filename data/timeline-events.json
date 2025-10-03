@@ -1,0 +1,255 @@
+[
+  {
+    "id": "som-kickoff",
+    "type": "announcement",
+    "title": " Summer of Making 2025 Begins!",
+    "description": "The official kickoff of SOM 2025. Hundreds of makers from around the world gather to build, create, and earn shells.",
+    "date": "2025-06-01T00:00:00Z",
+    "icon": "[Launch]",
+    "image": "/images/shell.png",
+    "metadata": {
+      "participants": 250,
+      "initial_shell_pool": 1000000
+    }
+  },
+  {
+    "id": "first-project",
+    "type": "project",
+    "title": "First Project Shipped!",
+    "description": "Orpheus ships the AI Dinosaur Assistant - combining dinosaurs and code in the most Orpheus way possible.",
+    "user_id": 1,
+    "project_id": 1,
+    "date": "2025-06-01T10:00:00Z",
+    "icon": "",
+    "image": "/images/orph_wow_prizes.png"
+  },
+  {
+    "id": "100-shells",
+    "type": "milestone",
+    "title": "First Maker Hits 100 Shells!",
+    "description": "CodeCrusader becomes the first maker to earn 100 shells through consistent project work.",
+    "user_id": 2,
+    "date": "2025-06-05T14:30:00Z",
+    "icon": ""
+  },
+  {
+    "id": "collab-editor",
+    "type": "project",
+    "title": "Real-time Collaborative Code Editor Launched",
+    "description": "CodeCrusader ships a Google Docs-style editor for code. The community immediately starts using it to pair program.",
+    "user_id": 2,
+    "project_id": 2,
+    "date": "2025-06-08T11:00:00Z",
+    "icon": "",
+    "image": "/images/shell.png"
+  },
+  {
+    "id": "week-one-recap",
+    "type": "announcement",
+    "title": "Week 1 Recap: 50 Projects Shipped!",
+    "description": "The first week ends with incredible momentum. 50 projects shipped, 10,000+ hours logged, and 75,000 shells earned.",
+    "date": "2025-06-08T23:59:00Z",
+    "icon": "[Stats]",
+    "metadata": {
+      "projects": 50,
+      "hours": 10234,
+      "shells": 75000
+    }
+  },
+  {
+    "id": "nft-marketplace",
+    "type": "project",
+    "title": "Generative Art NFT Marketplace Goes Live",
+    "description": "PixelPioneer launches a platform for creating and trading algorithmic art as NFTs.",
+    "user_id": 3,
+    "project_id": 3,
+    "date": "2025-06-15T16:00:00Z",
+    "icon": "[Design]"
+  },
+  {
+    "id": "hardware-hero",
+    "type": "achievement",
+    "title": "First Hardware Hero Badge Earned!",
+    "description": "ByteBandit earns the Hardware Hero badge after completing their third hardware project - a smart home dashboard.",
+    "user_id": 4,
+    "date": "2025-06-20T18:45:00Z",
+    "icon": ""
+  },
+  {
+    "id": "shell-shop-opens",
+    "type": "announcement",
+    "title": " Shell Shop Opens for Business!",
+    "description": "The community-requested Shell Shop launches with hardware, swag, and software licenses. Makers can now spend their hard-earned shells.",
+    "date": "2025-06-22T12:00:00Z",
+    "icon": "",
+    "image": "/images/shell.png",
+    "metadata": {
+      "items": 25,
+      "categories": ["hardware", "swag", "software"]
+    }
+  },
+  {
+    "id": "smart-home",
+    "type": "project",
+    "title": "DIY Smart Home Dashboard Completed",
+    "description": "ByteBandit completes their Arduino-powered smart home system. Custom PCB and all!",
+    "user_id": 4,
+    "project_id": 4,
+    "date": "2025-06-25T15:30:00Z",
+    "icon": ""
+  },
+  {
+    "id": "first-purchase",
+    "type": "purchase",
+    "title": "First Shell Shop Purchase!",
+    "description": "A maker purchases a Raspberry Pi 5 with shells. The economy is officially working!",
+    "date": "2025-06-26T09:15:00Z",
+    "icon": ""
+  },
+  {
+    "id": "ml-recipe",
+    "type": "project",
+    "title": "ML-Powered Recipe Recommender Ships",
+    "description": "ScriptSorcerer's FridgeChef uses computer vision and ML to recommend recipes based on ingredients.",
+    "user_id": 5,
+    "project_id": 5,
+    "date": "2025-06-28T13:00:00Z",
+    "icon": ""
+  },
+  {
+    "id": "month-one",
+    "type": "announcement",
+    "title": " Month 1 Complete: The Numbers Are Wild",
+    "description": "150 projects shipped, 50,000+ hours worked, 500,000 shells earned. The community is thriving!",
+    "date": "2025-06-30T23:59:00Z",
+    "icon": "",
+    "metadata": {
+      "projects": 150,
+      "hours": 52341,
+      "shells": 523410,
+      "makers": 287
+    }
+  },
+  {
+    "id": "shell-economics",
+    "type": "project",
+    "title": "Shell Economy Simulator Released",
+    "description": "Orpheus creates a tool to track shell inflation and whale movements. Turns out shells do experience inflation!",
+    "user_id": 1,
+    "project_id": 6,
+    "date": "2025-07-05T14:20:00Z",
+    "icon": "[Stats]",
+    "featured": true
+  },
+  {
+    "id": "1000-shells",
+    "type": "milestone",
+    "title": "First Maker Hits 1,000 Shells!",
+    "description": "Orpheus crosses the 1,000 shell milestone. The grind is real!",
+    "user_id": 1,
+    "date": "2025-07-08T10:00:00Z",
+    "icon": ""
+  },
+  {
+    "id": "slides-md",
+    "type": "project",
+    "title": "Markdown Presentation Tool Launched",
+    "description": "CodeCrusader's SlidesMD makes beautiful presentations from Markdown. PowerPoint is officially dead.",
+    "user_id": 2,
+    "project_id": 7,
+    "date": "2025-07-12T16:45:00Z",
+    "icon": "[Stats]"
+  },
+  {
+    "id": "overachiever-badge",
+    "type": "achievement",
+    "title": "Overachiever Badge Unlocked!",
+    "description": "Orpheus becomes the first to earn the legendary Overachiever badge for earning 10,000+ shells.",
+    "user_id": 1,
+    "date": "2025-07-15T10:30:00Z",
+    "icon": ""
+  },
+  {
+    "id": "css-playground",
+    "type": "project",
+    "title": "CSS Animation Playground Released",
+    "description": "PixelPioneer's visual CSS animation editor makes creating animations actually fun.",
+    "user_id": 3,
+    "project_id": 8,
+    "date": "2025-07-18T11:00:00Z",
+    "icon": "✨"
+  },
+  {
+    "id": "community-challenge",
+    "type": "announcement",
+    "title": "⚡ Community Challenge: Build in 24 Hours!",
+    "description": "A special 24-hour sprint challenge. Extra shells for completed projects!",
+    "date": "2025-07-20T00:00:00Z",
+    "icon": "⚡",
+    "metadata": {
+      "duration": "24 hours",
+      "bonus_shells": 500
+    }
+  },
+  {
+    "id": "challenge-complete",
+    "type": "announcement",
+    "title": "24-Hour Challenge: 89 Projects Shipped!",
+    "description": "The community goes absolutely wild. 89 projects shipped in 24 hours. Makers don't sleep!",
+    "date": "2025-07-21T00:00:00Z",
+    "icon": "[Target]",
+    "metadata": {
+      "projects": 89,
+      "participants": 156
+    }
+  },
+  {
+    "id": "casino-opens",
+    "type": "announcement",
+    "title": "SLOTS Shell Casino Opens!",
+    "description": "The virtual casino is here! Put your shells on the line in slots, roulette, and more. (It's all simulated, don't worry.)",
+    "date": "2025-07-25T12:00:00Z",
+    "icon": "",
+    "image": "/images/shell.png"
+  },
+  {
+    "id": "casino-winner",
+    "type": "milestone",
+    "title": "First Casino Jackpot Hit!",
+    "description": "A lucky maker wins 5,000 virtual shells on the slot machine. The casino economy is born.",
+    "date": "2025-07-26T15:20:00Z",
+    "icon": ""
+  },
+  {
+    "id": "final-week",
+    "type": "announcement",
+    "title": "Final Week of Summer of Making!",
+    "description": "The final push begins. Makers rush to complete their projects and earn those last shells.",
+    "date": "2025-08-01T00:00:00Z",
+    "icon": "⏰"
+  },
+  {
+    "id": "10000-shells",
+    "type": "milestone",
+    "title": "Orpheus Hits 10,000 Shells!",
+    "description": "The shell legend reaches 10k shells. The community celebrates with digital confetti.",
+    "user_id": 1,
+    "date": "2025-08-05T16:00:00Z",
+    "icon": ""
+  },
+  {
+    "id": "som-finale",
+    "type": "announcement",
+    "title": " Summer of Making 2025 Wraps Up!",
+    "description": "The official end of SOM 2025. 300+ projects, 100,000+ hours, 2 million+ shells. What a summer!",
+    "date": "2025-08-15T23:59:00Z",
+    "icon": "",
+    "image": "/images/orph_wow_prizes.png",
+    "metadata": {
+      "total_projects": 327,
+      "total_hours": 128453,
+      "total_shells": 2134567,
+      "total_makers": 312
+    }
+  }
+]

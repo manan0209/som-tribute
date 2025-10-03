@@ -1,12 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import sampleUsers from "@/data/sample-users.json";
-import sampleProjects from "@/data/sample-projects.json";
+import projectsData from "@/data/som-projects.json";
+import leaderboardData from "@/data/som-leaderboard.json";
+
+const projects = projectsData as any[];
+const leaderboard = leaderboardData as any[];
 
 export default function Home() {
-  // Get featured projects
-  const featuredProjects = sampleProjects.filter(p => p.featured).slice(0, 3);
-  const topMakers = sampleUsers.slice(0, 5);
+  // Get featured projects (highest devlog count)
+  const featuredProjects = projects
+    .filter(p => p.devlogs_count > 5 && p.description)
+    .sort((a, b) => b.devlogs_count - a.devlogs_count)
+    .slice(0, 3);
+  
+  // Get top makers from leaderboard
+  const topMakers = leaderboard
+    .sort((a, b) => (b.shells || 0) - (a.shells || 0))
+    .slice(0, 5);
 
   return (
     <div className="min-h-screen">
@@ -82,25 +92,25 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="organic-card text-center">
                   <div className="text-4xl font-bold text-vintage-brown mb-2">
-                    {sampleUsers.reduce((acc, u) => acc + u.projects_count, 0)}
+                    {projects.length.toLocaleString()}
                   </div>
                   <div className="font-steven text-vintage-dark">Projects Built</div>
                 </div>
                 <div className="organic-card text-center">
                   <div className="text-4xl font-bold text-vintage-brown mb-2">
-                    {sampleUsers.reduce((acc, u) => acc + u.total_hours_worked, 0).toLocaleString()}
+                    {Math.round(projects.reduce((acc, p) => acc + (p.total_seconds_coded || 0), 0) / 3600).toLocaleString()}
                   </div>
                   <div className="font-steven text-vintage-dark">Hours Worked</div>
                 </div>
                 <div className="organic-card text-center">
                   <div className="text-4xl font-bold text-vintage-brown mb-2">
-                    {sampleUsers.reduce((acc, u) => acc + u.shells_earned, 0).toLocaleString()}
+                    {leaderboard.reduce((acc, u) => acc + (u.shells || 0), 0).toLocaleString()}
                   </div>
                   <div className="font-steven text-vintage-dark">Shells Earned</div>
                 </div>
                 <div className="organic-card text-center">
                   <div className="text-4xl font-bold text-vintage-brown mb-2">
-                    {sampleUsers.length}
+                    {leaderboard.length.toLocaleString()}
                   </div>
                   <div className="font-steven text-vintage-dark">Amazing Makers</div>
                 </div>
@@ -122,7 +132,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="newspaper-heading mb-4">Featured Projects</h2>
             <div className="divider-ornament">
-              <span className="text-4xl">✦</span>
+              <span className="text-4xl">*</span>
             </div>
           </div>
 
@@ -228,7 +238,7 @@ export default function Home() {
                     `}>
                       #{user.rank}
                     </div>
-                    {index === 0 && <div className="text-2xl trophy-glow">🏆</div>}
+                    {index === 0 && <div className="text-2xl trophy-glow"></div>}
                   </div>
 
                   {/* Avatar */}
@@ -279,7 +289,7 @@ export default function Home() {
       <section className="py-16 px-6 md:px-12 bg-vintage-tan">
         <div className="max-w-4xl mx-auto text-center">
           <div className="organic-card bg-vintage-beige-light">
-            <div className="text-6xl mb-4">🎰</div>
+            <div className="text-6xl mb-4">SLOTS</div>
             <h2 className="newspaper-heading mb-4">
               Try Your Luck at the Shell Casino
             </h2>
@@ -288,7 +298,7 @@ export default function Home() {
               in our simulated casino. All earnings are virtual, all fun is real.
             </p>
             <Link href="/casino" className="marble-button text-lg px-12 py-4">
-              Enter Casino 🎲
+              Enter Casino 
             </Link>
             <p className="text-sm text-vintage-brown mt-4 font-steven italic">
               *This is a simulation. No real shells were harmed in the making of this casino.
@@ -335,7 +345,7 @@ export default function Home() {
           </div>
 
           <div className="text-center font-steven text-vintage-brown border-t-2 border-vintage-brown pt-6">
-            <p>Made with 💛 by the Hack Club community</p>
+            <p>Made with love by the Hack Club community</p>
             <p className="text-sm mt-2">Summer of Making 2025 • A celebration of makers and making</p>
           </div>
         </div>
