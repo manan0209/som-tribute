@@ -27,7 +27,7 @@ async function fetchPaginated(endpoint, delay = 500) {
       }
 
       const data = await response.json();
-      const items = data.projects || data.devlogs || data.comments || [];
+      const items = data.projects || data.devlogs || data.comments || data.users || [];
       
       if (items.length === 0) {
         hasMore = false;
@@ -74,10 +74,11 @@ async function fetchAll() {
   const startTime = Date.now();
   
   // Fetch all data
-  const [projects, devlogs, comments, leaderboard] = await Promise.all([
+  const [projects, devlogs, comments, users, leaderboard] = await Promise.all([
     fetchPaginated('projects', 300),
     fetchPaginated('devlogs', 300),
     fetchPaginated('comments', 300),
+    fetchPaginated('users', 300),
     fetchLeaderboard()
   ]);
   
@@ -89,6 +90,7 @@ async function fetchAll() {
   console.log(`  Projects: ${projects.length}`);
   console.log(`  Devlogs: ${devlogs.length}`);
   console.log(`  Comments: ${comments.length}`);
+  console.log(`  Users: ${users.length}`);
   console.log(`  Leaderboard: ${leaderboard.length}`);
   console.log(`  Time taken: ${duration}s`);
   console.log('=================================');
@@ -104,11 +106,13 @@ async function fetchAll() {
   fs.writeFileSync(`${dataDir}/som-projects.json`, JSON.stringify(projects, null, 2));
   fs.writeFileSync(`${dataDir}/som-devlogs.json`, JSON.stringify(devlogs, null, 2));
   fs.writeFileSync(`${dataDir}/som-comments.json`, JSON.stringify(comments, null, 2));
+  fs.writeFileSync(`${dataDir}/som-users.json`, JSON.stringify(users, null, 2));
   fs.writeFileSync(`${dataDir}/som-leaderboard.json`, JSON.stringify(leaderboard, null, 2));
   
   console.log('  som-projects.json saved');
   console.log('  som-devlogs.json saved');
   console.log('  som-comments.json saved');
+  console.log('  som-users.json saved');
   console.log('  som-leaderboard.json saved');
   
   console.log('\nDone! Real SOM data ready to use.');

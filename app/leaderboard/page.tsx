@@ -4,29 +4,30 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import sampleUsers from "@/data/sample-users.json";
-import type { User } from "@/types";
+import usersData from "@/data/som-users.json";
+
+const usersObj = usersData as Record<string, any>;
+const usersArray = Object.values(usersObj);
 
 export default function LeaderboardPage() {
-  const [sortBy, setSortBy] = useState<"shells" | "hours" | "projects">("shells");
+  const [sortBy, setSortBy] = useState<"shells" | "hours" | "projects">("hours");
   
-  const users = sampleUsers as User[];
-
   // Sort users based on selected criteria
   const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => {
+    return [...usersArray].sort((a: any, b: any) => {
       switch (sortBy) {
         case "shells":
-          return b.shells_earned - a.shells_earned;
+          // Note: balance is hidden in API, so we'll sort by projects as proxy
+          return (b.projects_count || 0) - (a.projects_count || 0);
         case "hours":
-          return b.total_hours_worked - a.total_hours_worked;
+          return (b.coding_time_seconds || 0) - (a.coding_time_seconds || 0);
         case "projects":
-          return b.projects_count - a.projects_count;
+          return (b.projects_count || 0) - (a.projects_count || 0);
         default:
           return 0;
       }
     });
-  }, [users, sortBy]);
+  }, [sortBy]);
 
   const getMedalEmoji = (rank: number) => {
     if (rank === 1) return "";
@@ -113,24 +114,26 @@ export default function LeaderboardPage() {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="organic-card text-center bg-gradient-to-br from-gray-100 to-gray-200 border-gray-400"
               >
-                <div className="text-6xl mb-4"></div>
-                <Image
-                  src={sortedUsers[1].avatar || ''}
-                  alt={sortedUsers[1].username}
-                  width={100}
-                  height={100}
-                  className="rounded-full border-4 border-gray-400 mx-auto mb-4"
-                />
+                <div className="text-6xl mb-4">2nd</div>
+                {sortedUsers[1].avatar && (
+                  <Image
+                    src={sortedUsers[1].avatar}
+                    alt={sortedUsers[1].display_name || 'User'}
+                    width={100}
+                    height={100}
+                    className="rounded-full border-4 border-gray-400 mx-auto mb-4"
+                  />
+                )}
                 <h3 className="font-national-park text-3xl font-bold text-vintage-dark mb-2">
-                  {sortedUsers[1].username}
+                  {sortedUsers[1].display_name || sortedUsers[1].slack_id}
                 </h3>
                 <div className="text-4xl font-bold text-gray-600 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[1].shells_earned.toLocaleString()} `}
-                  {sortBy === "hours" && `${sortedUsers[1].total_hours_worked}h ⏰`}
-                  {sortBy === "projects" && `${sortedUsers[1].projects_count} [Code]`}
+                  {sortBy === "shells" && `${sortedUsers[1].projects_count || 0} projects`}
+                  {sortBy === "hours" && `${Math.round((sortedUsers[1].coding_time_seconds || 0) / 3600)}h`}
+                  {sortBy === "projects" && `${sortedUsers[1].projects_count || 0}`}
                 </div>
                 <p className="font-steven text-vintage-brown">
-                  {sortedUsers[1].projects_count} projects • {sortedUsers[1].total_sessions} sessions
+                  {sortedUsers[1].devlogs_count || 0} devlogs
                 </p>
               </motion.div>
             )}
@@ -143,32 +146,41 @@ export default function LeaderboardPage() {
                 transition={{ duration: 0.5 }}
                 className="organic-card text-center bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-500 md:scale-110 md:mb-8"
               >
-                <div className="text-7xl mb-4 trophy-glow"></div>
-                <Image
-                  src={sortedUsers[0].avatar || ''}
-                  alt={sortedUsers[0].username}
-                  width={120}
-                  height={120}
-                  className="rounded-full border-4 border-yellow-500 mx-auto mb-4"
-                />
+                <div className="text-7xl mb-4 font-national-park font-bold">1st</div>
+                {sortedUsers[0].avatar && (
+                  <Image
+                    src={sortedUsers[0].avatar}
+                    alt={sortedUsers[0].display_name || 'User'}
+                    width={120}
+                    height={120}
+                    className="rounded-full border-4 border-yellow-500 mx-auto mb-4"
+                  />
+                )}
                 <h3 className="font-national-park text-4xl font-bold text-vintage-dark mb-2">
-                  {sortedUsers[0].username}
+                  {sortedUsers[0].display_name || sortedUsers[0].slack_id}
                 </h3>
                 <div className="text-5xl font-bold text-yellow-700 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[0].shells_earned.toLocaleString()} `}
-                  {sortBy === "hours" && `${sortedUsers[0].total_hours_worked}h ⏰`}
-                  {sortBy === "projects" && `${sortedUsers[0].projects_count} [Code]`}
+                  {sortBy === "shells" && `${sortedUsers[0].projects_count || 0} projects`}
+                  {sortBy === "hours" && `${Math.round((sortedUsers[0].coding_time_seconds || 0) / 3600)}h`}
+                  {sortBy === "projects" && `${sortedUsers[0].projects_count || 0}`}
                 </div>
                 <p className="font-steven text-vintage-brown">
-                  {sortedUsers[0].projects_count} projects • {sortedUsers[0].total_sessions} sessions
+                  {sortedUsers[0].devlogs_count || 0} devlogs
                 </p>
                 {sortedUsers[0].badges && sortedUsers[0].badges.length > 0 && (
                   <div className="mt-4 flex justify-center gap-2">
-                    {sortedUsers[0].badges.slice(0, 3).map(badge => (
-                      <span key={badge.id} className="text-2xl" title={badge.name}>
-                        {badge.icon}
-                      </span>
-                    ))}
+                    {sortedUsers[0].badges.slice(0, 3).map((badge: any, idx: number) => {
+                      if (typeof badge.icon === 'string' && badge.icon.startsWith('http')) {
+                        return (
+                          <img key={idx} src={badge.icon} alt={badge.name} className="w-8 h-8" title={badge.name} />
+                        );
+                      }
+                      return (
+                        <span key={idx} className="text-2xl" title={badge.name}>
+                          {badge.icon}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
               </motion.div>
@@ -182,24 +194,26 @@ export default function LeaderboardPage() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="organic-card text-center bg-gradient-to-br from-orange-100 to-orange-200 border-orange-500"
               >
-                <div className="text-6xl mb-4"></div>
-                <Image
-                  src={sortedUsers[2].avatar || ''}
-                  alt={sortedUsers[2].username}
-                  width={100}
-                  height={100}
-                  className="rounded-full border-4 border-orange-500 mx-auto mb-4"
-                />
+                <div className="text-6xl mb-4">3rd</div>
+                {sortedUsers[2].avatar && (
+                  <Image
+                    src={sortedUsers[2].avatar}
+                    alt={sortedUsers[2].display_name || 'User'}
+                    width={100}
+                    height={100}
+                    className="rounded-full border-4 border-orange-500 mx-auto mb-4"
+                  />
+                )}
                 <h3 className="font-national-park text-3xl font-bold text-vintage-dark mb-2">
-                  {sortedUsers[2].username}
+                  {sortedUsers[2].display_name || sortedUsers[2].slack_id}
                 </h3>
                 <div className="text-4xl font-bold text-orange-600 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[2].shells_earned.toLocaleString()} `}
-                  {sortBy === "hours" && `${sortedUsers[2].total_hours_worked}h ⏰`}
-                  {sortBy === "projects" && `${sortedUsers[2].projects_count} [Code]`}
+                  {sortBy === "shells" && `${sortedUsers[2].projects_count || 0} projects`}
+                  {sortBy === "hours" && `${Math.round((sortedUsers[2].coding_time_seconds || 0) / 3600)}h`}
+                  {sortBy === "projects" && `${sortedUsers[2].projects_count || 0}`}
                 </div>
                 <p className="font-steven text-vintage-brown">
-                  {sortedUsers[2].projects_count} projects • {sortedUsers[2].total_sessions} sessions
+                  {sortedUsers[2].devlogs_count || 0} devlogs
                 </p>
               </motion.div>
             )}
@@ -215,16 +229,17 @@ export default function LeaderboardPage() {
           </h2>
 
           <div className="space-y-4">
-            {sortedUsers.map((user, index) => {
+            {sortedUsers.slice(0, 50).map((user: any, index: number) => {
               const rank = index + 1;
               const medal = getMedalEmoji(rank);
+              const hours = Math.round((user.coding_time_seconds || 0) / 3600);
 
               return (
                 <motion.div
                   key={user.id}
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  transition={{ duration: 0.3, delay: index * 0.02 }}
                   className={`organic-card hover:scale-[1.01] transition-transform ${
                     rank <= 3 ? 'border-3' : ''
                   }`}
@@ -242,23 +257,25 @@ export default function LeaderboardPage() {
                     </div>
 
                     {/* Avatar */}
-                    <Image
-                      src={user.avatar || ''}
-                      alt={user.username}
-                      width={80}
-                      height={80}
-                      className={`rounded-full border-4 ${
-                        rank === 1 ? 'border-yellow-500' :
-                        rank === 2 ? 'border-gray-400' :
-                        rank === 3 ? 'border-orange-500' :
-                        'border-vintage-brown'
-                      }`}
-                    />
+                    {user.avatar && (
+                      <Image
+                        src={user.avatar}
+                        alt={user.display_name || 'User'}
+                        width={80}
+                        height={80}
+                        className={`rounded-full border-4 ${
+                          rank === 1 ? 'border-yellow-500' :
+                          rank === 2 ? 'border-gray-400' :
+                          rank === 3 ? 'border-orange-500' :
+                          'border-vintage-brown'
+                        }`}
+                      />
+                    )}
 
                     {/* User Info */}
                     <div className="flex-1">
                       <h3 className="font-national-park text-2xl md:text-3xl font-bold text-vintage-dark mb-1">
-                        {user.username}
+                        {user.display_name || user.slack_id}
                       </h3>
                       {user.bio && (
                         <p className="font-steven text-sm text-vintage-brown line-clamp-1 mb-2">
@@ -266,21 +283,21 @@ export default function LeaderboardPage() {
                         </p>
                       )}
                       <div className="flex flex-wrap gap-3 text-sm font-steven text-vintage-dark">
-                        <span> {user.location || 'Unknown'}</span>
-                        <span>[Code] {user.projects_count} projects</span>
-                        <span> {user.total_sessions} sessions</span>
+                        <span>{user.projects_count || 0} projects</span>
+                        <span>{user.devlogs_count || 0} devlogs</span>
+                        <span>{user.votes_count || 0} votes</span>
                       </div>
                     </div>
 
                     {/* Stats */}
                     <div className="text-right">
                       <div className="text-3xl md:text-4xl font-bold text-vintage-brown mb-1">
-                        {sortBy === "shells" && user.shells_earned.toLocaleString()}
-                        {sortBy === "hours" && `${user.total_hours_worked}h`}
-                        {sortBy === "projects" && user.projects_count}
+                        {sortBy === "shells" && (user.projects_count || 0)}
+                        {sortBy === "hours" && `${hours}h`}
+                        {sortBy === "projects" && (user.projects_count || 0)}
                       </div>
                       <div className="text-sm font-steven text-vintage-brown">
-                        {sortBy === "shells" && "Shells Earned"}
+                        {sortBy === "shells" && "Projects"}
                         {sortBy === "hours" && "Hours Worked"}
                         {sortBy === "projects" && "Projects Built"}
                       </div>
@@ -288,15 +305,22 @@ export default function LeaderboardPage() {
                       {/* Badges */}
                       {user.badges && user.badges.length > 0 && (
                         <div className="mt-2 flex justify-end gap-1">
-                          {user.badges.slice(0, 3).map(badge => (
-                            <span 
-                              key={badge.id} 
-                              className="text-xl"
-                              title={badge.name}
-                            >
-                              {badge.icon}
-                            </span>
-                          ))}
+                          {user.badges.slice(0, 3).map((badge: any, idx: number) => {
+                            if (typeof badge.icon === 'string' && badge.icon.startsWith('http')) {
+                              return (
+                                <img key={idx} src={badge.icon} alt={badge.name} className="w-6 h-6" title={badge.name} />
+                              );
+                            }
+                            return (
+                              <span 
+                                key={idx} 
+                                className="text-xl"
+                                title={badge.name}
+                              >
+                                {badge.icon}
+                              </span>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -317,35 +341,35 @@ export default function LeaderboardPage() {
           
           <div className="grid md:grid-cols-4 gap-6">
             <div className="organic-card text-center">
-              <div className="text-4xl mb-2"></div>
+              <div className="text-4xl mb-2">[Users]</div>
               <div className="text-4xl font-bold text-vintage-brown mb-2">
-                {users.length}
+                {usersArray.length}
               </div>
               <div className="font-steven text-vintage-dark">Total Makers</div>
             </div>
             
             <div className="organic-card text-center">
-              <div className="text-4xl mb-2"></div>
+              <div className="text-4xl mb-2">[Projects]</div>
               <div className="text-4xl font-bold text-vintage-brown mb-2">
-                {users.reduce((acc, u) => acc + u.shells_earned, 0).toLocaleString()}
+                {usersArray.reduce((acc: number, u: any) => acc + (u.projects_count || 0), 0).toLocaleString()}
               </div>
-              <div className="font-steven text-vintage-dark">Shells Earned</div>
+              <div className="font-steven text-vintage-dark">Total Projects</div>
             </div>
             
             <div className="organic-card text-center">
-              <div className="text-4xl mb-2">⏰</div>
+              <div className="text-4xl mb-2">[Time]</div>
               <div className="text-4xl font-bold text-vintage-brown mb-2">
-                {users.reduce((acc, u) => acc + u.total_hours_worked, 0).toLocaleString()}
+                {Math.round(usersArray.reduce((acc: number, u: any) => acc + (u.coding_time_seconds || 0), 0) / 3600).toLocaleString()}
               </div>
               <div className="font-steven text-vintage-dark">Hours Worked</div>
             </div>
             
             <div className="organic-card text-center">
-              <div className="text-4xl mb-2">[Code]</div>
+              <div className="text-4xl mb-2">[Devlogs]</div>
               <div className="text-4xl font-bold text-vintage-brown mb-2">
-                {users.reduce((acc, u) => acc + u.projects_count, 0)}
+                {usersArray.reduce((acc: number, u: any) => acc + (u.devlogs_count || 0), 0).toLocaleString()}
               </div>
-              <div className="font-steven text-vintage-dark">Projects Built</div>
+              <div className="font-steven text-vintage-dark">Total Devlogs</div>
             </div>
           </div>
         </div>

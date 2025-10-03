@@ -137,69 +137,33 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {featuredProjects.map((project) => {
-              const user = sampleUsers.find(u => u.id === project.user_id);
-              return (
+            {featuredProjects.map((project: any) => (
                 <div key={project.id} className="organic-card hover:scale-[1.02] transition-transform">
-                  <div className="flex items-center gap-3 mb-4">
-                    {user?.avatar && (
-                      <Image
-                        src={user.avatar}
-                        alt={user.username}
-                        width={40}
-                        height={40}
-                        className="rounded-full border-2 border-vintage-brown"
-                      />
-                    )}
-                    <div>
-                      <div className="font-steven font-bold text-vintage-dark">
-                        {user?.username}
-                      </div>
-                      <div className="text-sm text-vintage-brown">
-                        {project.total_hours}h worked
-                      </div>
-                    </div>
-                  </div>
-
                   <h3 className="font-national-park text-2xl font-bold text-vintage-dark mb-3">
                     {project.title}
                   </h3>
 
                   <p className="font-steven text-vintage-dark mb-4 line-clamp-3">
-                    {project.description}
+                    {project.description?.replace(/<[^>]*>/g, '') || 'An amazing Summer of Making project!'}
                   </p>
 
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies?.slice(0, 3).map(tech => (
-                      <span 
-                        key={tech}
-                        className="text-xs bg-vintage-tan px-3 py-1 rounded-full border border-vintage-brown-light"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="shell-badge text-sm">
-                      <Image 
-                        src="/images/shell.png" 
-                        alt="Shell" 
-                        width={20} 
-                        height={20}
-                      />
-                      <span className="font-bold">{project.shell_value.toLocaleString()}</span>
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="text-sm text-vintage-brown font-steven">
+                      {project.devlogs_count} devlogs • {Math.round(project.total_seconds_coded / 3600)}h
                     </div>
-                    <Link 
-                      href={`/projects/${project.id}`}
-                      className="text-vintage-brown hover:text-vintage-dark font-bold transition-colors"
-                    >
-                      Read More →
-                    </Link>
+                    {project.repo_link && (
+                      <a 
+                        href={project.repo_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-vintage-brown hover:text-vintage-dark font-bold transition-colors"
+                      >
+                        View Project
+                      </a>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+            ))}
           </div>
 
           <div className="text-center mt-12">
@@ -221,42 +185,32 @@ export default function Home() {
           </div>
 
           <div className="max-w-3xl mx-auto">
-            {topMakers.map((user, index) => (
+            {topMakers.map((user: any, index: number) => (
               <div 
-                key={user.id}
+                key={user.slack_id}
                 className="organic-card mb-4 hover:scale-[1.01] transition-transform"
               >
                 <div className="flex items-center gap-6">
                   {/* Rank */}
                   <div className="text-center">
                     <div className={`
-                      text-4xl font-bold
+                      text-4xl font-bold font-national-park
                       ${index === 0 ? 'text-yellow-600' : ''}
                       ${index === 1 ? 'text-gray-400' : ''}
                       ${index === 2 ? 'text-orange-600' : ''}
                       ${index > 2 ? 'text-vintage-brown' : ''}
                     `}>
-                      #{user.rank}
+                      #{index + 1}
                     </div>
-                    {index === 0 && <div className="text-2xl trophy-glow"></div>}
                   </div>
-
-                  {/* Avatar */}
-                  <Image
-                    src={user.avatar || ''}
-                    alt={user.username}
-                    width={60}
-                    height={60}
-                    className="rounded-full border-3 border-vintage-brown"
-                  />
 
                   {/* Info */}
                   <div className="flex-1">
                     <div className="font-national-park text-2xl font-bold text-vintage-dark">
-                      {user.username}
+                      {user.slack_id}
                     </div>
                     <div className="font-steven text-vintage-brown">
-                      {user.projects_count} projects • {user.total_hours_worked}h worked
+                      Maker ID: {user.slack_id.slice(0, 8)}...
                     </div>
                   </div>
 
@@ -269,7 +223,7 @@ export default function Home() {
                       height={24}
                     />
                     <span className="font-bold text-lg">
-                      {user.shells_earned.toLocaleString()}
+                      {(user.shells || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>

@@ -4,58 +4,65 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import sampleProjects from "@/data/sample-projects.json";
-import sampleUsers from "@/data/sample-users.json";
-import type { Project } from "@/types";
+import projectsData from "@/data/som-projects.json";
+import usersData from "@/data/som-users.json";
+
+const projects = projectsData as any[];
+const usersObj = usersData as Record<string, any>;
+// Convert users object to lookup by slack_id
+const usersBySlackId = Object.values(usersObj).reduce((acc: any, user: any) => {
+  acc[user.slack_id] = user;
+  return acc;
+}, {});
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"newest" | "hours" | "shells">("newest");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"newest" | "hours" | "devlogs">("devlogs");
 
-  const projects = sampleProjects as Project[];
-
-  // Get all unique tags
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    projects.forEach(p => p.tags?.forEach(tag => tags.add(tag)));
-    return Array.from(tags).sort();
-  }, [projects]);
+  // Get all unique categories
+  const allCategories = useMemo(() => {
+    const categories = new Set<string>();
+    projects.forEach((p: any) => {
+      if (p.category) categories.add(p.category);
+    });
+    return Array.from(categories).sort();
+  }, []);
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
-    let filtered = projects;
+    let filtered = projects.filter((p: any) => p.title && p.description);
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter((p: any) => 
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.technologies?.some(tech => tech.toLowerCase().includes(searchQuery.toLowerCase()))
+        p.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Tag filter
-    if (selectedTag) {
-      filtered = filtered.filter(p => p.tags?.includes(selectedTag));
+    // Category filter
+    if (selectedCategory) {
+      filtered = filtered.filter((p: any) => p.category === selectedCategory);
     }
 
     // Sort
-    filtered = [...filtered].sort((a, b) => {
+    filtered = [...filtered].sort((a: any, b: any) => {
       switch (sortBy) {
         case "newest":
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case "hours":
-          return b.total_hours - a.total_hours;
-        case "shells":
-          return b.shell_value - a.shell_value;
+          return (b.total_seconds_coded || 0) - (a.total_seconds_coded || 0);
+        case "devlogs":
+          return (b.devlogs_count || 0) - (a.devlogs_count || 0);
         default:
           return 0;
       }
     });
 
     return filtered;
-  }, [projects, searchQuery, selectedTag, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy]);
 
   return (
     <div className="min-h-screen bg-vintage-beige">
@@ -92,14 +99,14 @@ export default function ProjectsPage() {
           <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setSortBy("newest")}
+                onClick={() => setSortBy("devlogs")}
                 className={`px-4 py-2 rounded-full font-steven transition-all ${
-                  sortBy === "newest" 
+                  sortBy === "devlogs" 
                     ? 'bg-vintage-brown text-vintage-beige-light' 
                     : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige'
                 }`}
               >
-                ⏰ Newest
+                Most Devlogs
               </button>
               <button
                 onClick={() => setSortBy("hours")}
@@ -109,17 +116,17 @@ export default function ProjectsPage() {
                     : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige'
                 }`}
               >
-                ⌛ Most Hours
+                Most Hours
               </button>
               <button
-                onClick={() => setSortBy("shells")}
+                onClick={() => setSortBy("newest")}
                 className={`px-4 py-2 rounded-full font-steven transition-all ${
-                  sortBy === "shells" 
+                  sortBy === "newest" 
                     ? 'bg-vintage-brown text-vintage-beige-light' 
                     : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige'
                 }`}
               >
-                 Highest Value
+                Newest
               </button>
             </div>
 
@@ -128,29 +135,29 @@ export default function ProjectsPage() {
             </div>
           </div>
 
-          {/* Tag Filter */}
+          {/* Category Filter */}
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setSelectedTag(null)}
+              onClick={() => setSelectedCategory(null)}
               className={`px-4 py-2 rounded-full text-sm font-steven transition-all ${
-                selectedTag === null
+                selectedCategory === null
                   ? 'bg-vintage-brown text-vintage-beige-light'
                   : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige border border-vintage-brown-light'
               }`}
             >
-              All Tags
+              All Categories
             </button>
-            {allTags.map(tag => (
+            {allCategories.map((category: string) => (
               <button
-                key={tag}
-                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                key={category}
+                onClick={() => setSelectedCategory(category === selectedCategory ? null : category)}
                 className={`px-4 py-2 rounded-full text-sm font-steven transition-all ${
-                  selectedTag === tag
+                  selectedCategory === category
                     ? 'bg-vintage-brown text-vintage-beige-light'
                     : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige border border-vintage-brown-light'
                 }`}
               >
-                #{tag}
+                {category}
               </button>
             ))}
           </div>
@@ -172,8 +179,9 @@ export default function ProjectsPage() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((project, index) => {
-                const user = sampleUsers.find(u => u.id === project.user_id);
+              {filteredProjects.map((project: any, index: number) => {
+                const user = usersBySlackId[project.slack_id];
+                const hours = Math.round((project.total_seconds_coded || 0) / 3600);
                 
                 return (
                   <motion.div
@@ -183,33 +191,28 @@ export default function ProjectsPage() {
                     transition={{ duration: 0.4, delay: index * 0.05 }}
                     className="organic-card hover:scale-[1.02] transition-transform"
                   >
-                    {/* Featured Badge */}
-                    {project.featured && (
-                      <div className="inline-block bg-yellow-400 text-vintage-dark px-3 py-1 rounded-full text-xs font-bold mb-3">
-                        ⭐ FEATURED
+                    {/* User Info */}
+                    {user && (
+                      <div className="flex items-center gap-3 mb-4">
+                        {user.avatar && (
+                          <Image
+                            src={user.avatar}
+                            alt={user.display_name || 'User'}
+                            width={40}
+                            height={40}
+                            className="rounded-full border-2 border-vintage-brown"
+                          />
+                        )}
+                        <div>
+                          <div className="font-steven font-bold text-vintage-dark">
+                            {user.display_name || user.slack_id}
+                          </div>
+                          <div className="text-sm text-vintage-brown">
+                            {user.projects_count || 0} projects
+                          </div>
+                        </div>
                       </div>
                     )}
-
-                    {/* User Info */}
-                    <div className="flex items-center gap-3 mb-4">
-                      {user?.avatar && (
-                        <Image
-                          src={user.avatar}
-                          alt={user.username}
-                          width={40}
-                          height={40}
-                          className="rounded-full border-2 border-vintage-brown"
-                        />
-                      )}
-                      <div>
-                        <div className="font-steven font-bold text-vintage-dark">
-                          {user?.username}
-                        </div>
-                        <div className="text-sm text-vintage-brown">
-                          {project.sessions_count} sessions
-                        </div>
-                      </div>
-                    </div>
 
                     {/* Title */}
                     <h3 className="font-national-park text-2xl font-bold text-vintage-dark mb-3 line-clamp-2">
@@ -218,54 +221,43 @@ export default function ProjectsPage() {
 
                     {/* Description */}
                     <p className="font-steven text-vintage-dark mb-4 line-clamp-3">
-                      {project.description}
+                      {project.description?.replace(/<[^>]*>/g, '') || 'An amazing Summer of Making project!'}
                     </p>
 
-                    {/* Technologies */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies?.slice(0, 4).map(tech => (
-                        <span 
-                          key={tech}
-                          className="text-xs bg-vintage-tan px-3 py-1 rounded-full border border-vintage-brown-light font-steven"
-                        >
-                          {tech}
+                    {/* Category */}
+                    {project.category && (
+                      <div className="mb-4">
+                        <span className="text-xs bg-vintage-tan px-3 py-1 rounded-full border border-vintage-brown-light font-steven">
+                          {project.category}
                         </span>
-                      ))}
-                    </div>
+                      </div>
+                    )}
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       <div className="text-center p-2 bg-vintage-beige rounded-lg">
                         <div className="text-2xl font-bold text-vintage-brown">
-                          {project.total_hours}h
+                          {hours}h
                         </div>
                         <div className="text-xs text-vintage-dark font-steven">
                           Time Spent
                         </div>
                       </div>
                       <div className="text-center p-2 bg-vintage-beige rounded-lg">
-                        <div className="flex items-center justify-center gap-1">
-                          <Image 
-                            src="/images/shell.png" 
-                            alt="Shell" 
-                            width={20} 
-                            height={20}
-                          />
-                          <span className="text-2xl font-bold text-vintage-brown">
-                            {project.shell_value}
-                          </span>
+                        <div className="text-2xl font-bold text-vintage-brown">
+                          {project.devlogs_count || 0}
                         </div>
                         <div className="text-xs text-vintage-dark font-steven">
-                          Shell Value
+                          Devlogs
                         </div>
                       </div>
                     </div>
 
                     {/* Actions */}
                     <div className="flex gap-3">
-                      {project.repo_url && (
+                      {project.repo_link && (
                         <a
-                          href={project.repo_url}
+                          href={project.repo_link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-center bg-vintage-brown text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown-dark transition-colors"
@@ -273,14 +265,24 @@ export default function ProjectsPage() {
                           GitHub
                         </a>
                       )}
-                      {project.demo_url && (
+                      {project.demo_link && (
                         <a
-                          href={project.demo_url}
+                          href={project.demo_link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-center bg-vintage-brown-light text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown transition-colors"
                         >
                           Demo
+                        </a>
+                      )}
+                      {!project.repo_link && !project.demo_link && project.readme_link && (
+                        <a
+                          href={project.readme_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 text-center bg-vintage-brown-light text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown transition-colors"
+                        >
+                          README
                         </a>
                       )}
                     </div>
