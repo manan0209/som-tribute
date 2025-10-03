@@ -3,15 +3,16 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import usersData from "@/data/som-users.json";
 import shellsData from "@/data/som-shells.json";
+import projectsData from "@/data/som-projects.json";
 
 const usersObj = usersData as Record<string, any>;
 const usersArray = Object.values(usersObj);
 const shellsArray = shellsData as Array<any>;
+const projectsArray = projectsData as Array<any>;
 
-// Create a map of slack_id to shells data for quick lookup
 const shellsMap = shellsArray.reduce((acc: any, shell: any) => {
   acc[shell.slack_id] = shell;
   return acc;
@@ -19,10 +20,33 @@ const shellsMap = shellsArray.reduce((acc: any, shell: any) => {
 
 export default function LeaderboardPage() {
   const [sortBy, setSortBy] = useState<"shells" | "hours" | "projects">("hours");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   
-  // Sort users based on selected criteria
+  // Get user's rank in current sorting
+  const getUserRank = (user: any) => {
+    return sortedUsers.findIndex((u: any) => u.id === user.id) + 1;
+  };
+  
+  // Get user's projects
+  const getUserProjects = (user: any) => {
+    return projectsArray.filter((project: any) => project.slack_id === user.slack_id);
+  };
+  
   const sortedUsers = useMemo(() => {
-    return [...usersArray].sort((a: any, b: any) => {
+    let filtered = usersArray;
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = usersArray.filter((user: any) => {
+        const displayName = (user.display_name || '').toLowerCase();
+        const slackId = (user.slack_id || '').toLowerCase();
+        const bio = (user.bio || '').toLowerCase();
+        return displayName.includes(query) || slackId.includes(query) || bio.includes(query);
+      });
+    }
+    
+    // Then sort
+    return [...filtered].sort((a: any, b: any) => {
       switch (sortBy) {
         case "shells":
           // Use real shells earned data
@@ -37,7 +61,7 @@ export default function LeaderboardPage() {
           return 0;
       }
     });
-  }, [sortBy]);
+  }, [sortBy, searchQuery]);
 
   const getMedalEmoji = (rank: number) => {
     if (rank === 1) return "";
@@ -72,7 +96,8 @@ export default function LeaderboardPage() {
 
       {/* Sort Options */}
       <section className="py-8 px-6 md:px-12 bg-vintage-tan sticky top-0 z-10 border-b-2 border-vintage-brown">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto space-y-6">
+          
           <div className="flex flex-wrap gap-4 justify-center">
             <button
               onClick={() => setSortBy("shells")}
@@ -92,7 +117,7 @@ export default function LeaderboardPage() {
                   : 'bg-vintage-beige-light text-vintage-dark hover:bg-vintage-beige border-2 border-vintage-brown-light'
               }`}
             >
-              ⏰ Hours Worked
+              Hours Worked
             </button>
             <button
               onClick={() => setSortBy("projects")}
@@ -105,15 +130,46 @@ export default function LeaderboardPage() {
               [Code] Projects Built
             </button>
           </div>
+          
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none text-2xl">
+                🔍
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search makers by name, slack ID, or bio..."
+                className="w-full pl-16 pr-12 py-4 rounded-full border-3 border-vintage-brown font-steven text-lg bg-vintage-beige-light text-vintage-dark placeholder-vintage-brown-light focus:outline-none focus:ring-4 focus:ring-vintage-brown-light transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-vintage-brown hover:text-vintage-dark transition-colors text-3xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-vintage-beige"
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-center mt-2 font-steven text-vintage-brown">
+                Found {sortedUsers.length} maker{sortedUsers.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Podium - Top 3 */}
-      <section className="py-12 px-6 md:px-12 bg-vintage-beige-light">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="newspaper-heading text-center mb-12">
-            Hall of Fame
-          </h2>
+      {/* Podium - Top 3 - Only show when not searching */}
+      {!searchQuery && (
+        <section className="py-12 px-6 md:px-12 bg-vintage-beige-light">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="newspaper-heading text-center mb-12">
+              Hall of Fame
+            </h2>
           
           <div className="grid md:grid-cols-3 gap-8 items-end">
             {/* 2nd Place */}
@@ -122,7 +178,8 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="organic-card text-center bg-gradient-to-br from-gray-100 to-gray-200 border-gray-400"
+                onClick={() => setSelectedUser(sortedUsers[1])}
+                className="organic-card text-center bg-gradient-to-br from-gray-100 to-gray-200 border-gray-400 cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="text-6xl mb-4">2nd</div>
                 {sortedUsers[1].avatar && (
@@ -154,7 +211,8 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="organic-card text-center bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-500 md:scale-110 md:mb-8"
+                onClick={() => setSelectedUser(sortedUsers[0])}
+                className="organic-card text-center bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-500 md:scale-110 md:mb-8 cursor-pointer hover:scale-[1.15] transition-transform"
               >
                 <div className="text-7xl mb-4 font-national-park font-bold">1st</div>
                 {sortedUsers[0].avatar && (
@@ -202,7 +260,8 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="organic-card text-center bg-gradient-to-br from-orange-100 to-orange-200 border-orange-500"
+                onClick={() => setSelectedUser(sortedUsers[2])}
+                className="organic-card text-center bg-gradient-to-br from-orange-100 to-orange-200 border-orange-500 cursor-pointer hover:scale-105 transition-transform"
               >
                 <div className="text-6xl mb-4">3rd</div>
                 {sortedUsers[2].avatar && (
@@ -230,16 +289,17 @@ export default function LeaderboardPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Full Rankings */}
       <section className="py-12 px-6 md:px-12">
         <div className="max-w-5xl mx-auto">
           <h2 className="newspaper-heading text-center mb-8">
-            Complete Rankings
+            {searchQuery ? 'Search Results' : 'Complete Rankings'}
           </h2>
 
           <div className="space-y-4">
-            {sortedUsers.slice(0, 50).map((user: any, index: number) => {
+            {sortedUsers.slice(0, searchQuery ? sortedUsers.length : 50).map((user: any, index: number) => {
               const rank = index + 1;
               const medal = getMedalEmoji(rank);
               const hours = Math.round((user.coding_time_seconds || 0) / 3600);
@@ -251,7 +311,8 @@ export default function LeaderboardPage() {
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.02 }}
-                  className={`organic-card hover:scale-[1.01] transition-transform ${
+                  onClick={() => setSelectedUser(user)}
+                  className={`organic-card hover:scale-[1.01] transition-transform cursor-pointer ${
                     rank <= 3 ? 'border-3' : ''
                   }`}
                 >
@@ -385,6 +446,209 @@ export default function LeaderboardPage() {
           </div>
         </div>
       </section>
+
+      {/* User Detail Modal */}
+      <AnimatePresence>
+        {selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedUser(null)}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-vintage-beige border-4 border-vintage-brown rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto relative"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="sticky top-4 right-4 float-right text-vintage-brown hover:text-vintage-dark text-4xl font-bold w-12 h-12 flex items-center justify-center rounded-full bg-vintage-beige-light hover:bg-vintage-tan border-2 border-vintage-brown transition-all z-10"
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+
+              <div className="p-8">
+                {/* User Header */}
+                <div className="flex flex-col md:flex-row gap-6 items-center md:items-start mb-8">
+                  {selectedUser.avatar && (
+                    <Image
+                      src={selectedUser.avatar}
+                      alt={selectedUser.display_name || 'User'}
+                      width={150}
+                      height={150}
+                      className="rounded-full border-4 border-vintage-brown"
+                    />
+                  )}
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="font-national-park text-4xl md:text-5xl font-bold text-vintage-dark mb-2">
+                      {selectedUser.display_name || selectedUser.slack_id}
+                    </h2>
+                    {selectedUser.bio && (
+                      <p className="font-steven text-lg text-vintage-brown mb-4">
+                        {selectedUser.bio}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
+                      {selectedUser.badges && selectedUser.badges.map((badge: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="px-3 py-1 bg-vintage-beige-light border-2 border-vintage-brown rounded-full flex items-center gap-2"
+                          title={badge.name}
+                        >
+                          {typeof badge.icon === 'string' && badge.icon.startsWith('http') ? (
+                            <img src={badge.icon} alt={badge.name} className="w-6 h-6" />
+                          ) : (
+                            <span className="text-xl">{badge.icon}</span>
+                          )}
+                          <span className="font-steven text-sm">{badge.text || badge.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-2xl font-bold text-vintage-brown">
+                      Rank #{getUserRank(selectedUser)} in {sortBy === 'shells' ? 'Shells Earned' : sortBy === 'hours' ? 'Hours Worked' : 'Projects Built'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <div className="organic-card text-center">
+                    <div className="text-3xl font-bold text-vintage-brown">
+                      {selectedUser.projects_count || 0}
+                    </div>
+                    <div className="font-steven text-vintage-dark">Projects</div>
+                  </div>
+                  <div className="organic-card text-center">
+                    <div className="text-3xl font-bold text-vintage-brown">
+                      {Math.round((selectedUser.coding_time_seconds || 0) / 3600)}h
+                    </div>
+                    <div className="font-steven text-vintage-dark">Hours Coded</div>
+                  </div>
+                  <div className="organic-card text-center">
+                    <div className="text-3xl font-bold text-vintage-brown">
+                      {selectedUser.devlogs_count || 0}
+                    </div>
+                    <div className="font-steven text-vintage-dark">Devlogs</div>
+                  </div>
+                  <div className="organic-card text-center">
+                    <div className="text-3xl font-bold text-vintage-brown">
+                      {Math.round(shellsMap[selectedUser.slack_id]?.total_shells_earned || 0)}
+                    </div>
+                    <div className="font-steven text-vintage-dark">Shells Earned</div>
+                  </div>
+                </div>
+
+                {/* Projects Built */}
+                {(() => {
+                  const userProjects = getUserProjects(selectedUser);
+                  return userProjects.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className="newspaper-heading mb-4">
+                        Projects Built ({userProjects.length})
+                      </h3>
+                      <div className="space-y-3 max-h-60 overflow-y-auto">
+                        {userProjects.slice(0, 10).map((project: any) => (
+                          <div key={project.id} className="organic-card hover:scale-[1.01] transition-transform">
+                            <h4 className="font-national-park text-xl font-bold text-vintage-dark mb-1">
+                              {project.title}
+                            </h4>
+                            <p className="font-steven text-sm text-vintage-brown line-clamp-2 mb-2">
+                              {project.description?.replace(/<[^>]*>/g, '')}
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs font-steven">
+                              <span className="px-2 py-1 bg-vintage-tan rounded">
+                                {project.category}
+                              </span>
+                              <span className="px-2 py-1 bg-vintage-tan rounded">
+                                {Math.round((project.total_seconds_coded || 0) / 3600)}h coded
+                              </span>
+                              <span className="px-2 py-1 bg-vintage-tan rounded">
+                                {project.devlogs_count || 0} devlogs
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {userProjects.length > 10 && (
+                          <p className="text-center font-steven text-vintage-brown">
+                            ...and {userProjects.length - 10} more projects
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Shell Transactions */}
+                {shellsMap[selectedUser.slack_id]?.payouts && (
+                  <div>
+                    <h3 className="newspaper-heading mb-4">
+                      Shell Transactions ({shellsMap[selectedUser.slack_id].payouts.length})
+                    </h3>
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
+                      {shellsMap[selectedUser.slack_id].payouts
+                        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                        .slice(0, 20)
+                        .map((payout: any, idx: number) => {
+                          const amount = parseFloat(payout.amount);
+                          const isPositive = amount > 0;
+                          return (
+                            <div
+                              key={idx}
+                              className={`flex items-center justify-between p-3 rounded-lg border-2 ${
+                                isPositive
+                                  ? 'bg-green-50 border-green-300'
+                                  : 'bg-red-50 border-red-300'
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <div className="font-steven font-bold">
+                                  {payout.type === 'User' ? '💰 Earned' : '🛍️ Shop Order'}
+                                </div>
+                                <div className="text-xs text-vintage-brown">
+                                  {new Date(payout.created_at).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              </div>
+                              <div className={`text-2xl font-bold ${
+                                isPositive ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {isPositive ? '+' : ''}{amount}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {shellsMap[selectedUser.slack_id].payouts.length > 20 && (
+                        <p className="text-center font-steven text-vintage-brown">
+                          ...and {shellsMap[selectedUser.slack_id].payouts.length - 20} more transactions
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-4 p-4 bg-vintage-beige-light rounded-lg border-2 border-vintage-brown">
+                      <div className="flex justify-between items-center">
+                        <span className="font-steven text-lg">Current Balance:</span>
+                        <span className="font-national-park text-2xl font-bold text-vintage-brown">
+                          {shellsMap[selectedUser.slack_id].current_shells} shells
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
