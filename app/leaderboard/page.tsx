@@ -5,9 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import usersData from "@/data/som-users.json";
+import shellsData from "@/data/som-shells.json";
 
 const usersObj = usersData as Record<string, any>;
 const usersArray = Object.values(usersObj);
+const shellsArray = shellsData as Array<any>;
+
+// Create a map of slack_id to shells data for quick lookup
+const shellsMap = shellsArray.reduce((acc: any, shell: any) => {
+  acc[shell.slack_id] = shell;
+  return acc;
+}, {});
 
 export default function LeaderboardPage() {
   const [sortBy, setSortBy] = useState<"shells" | "hours" | "projects">("hours");
@@ -17,8 +25,10 @@ export default function LeaderboardPage() {
     return [...usersArray].sort((a: any, b: any) => {
       switch (sortBy) {
         case "shells":
-          // Note: balance is hidden in API, so we'll sort by projects as proxy
-          return (b.projects_count || 0) - (a.projects_count || 0);
+          // Use real shells earned data
+          const aShells = shellsMap[a.slack_id]?.total_shells_earned || 0;
+          const bShells = shellsMap[b.slack_id]?.total_shells_earned || 0;
+          return bShells - aShells;
         case "hours":
           return (b.coding_time_seconds || 0) - (a.coding_time_seconds || 0);
         case "projects":
@@ -128,7 +138,7 @@ export default function LeaderboardPage() {
                   {sortedUsers[1].display_name || sortedUsers[1].slack_id}
                 </h3>
                 <div className="text-4xl font-bold text-gray-600 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[1].projects_count || 0} projects`}
+                  {sortBy === "shells" && `${Math.round(shellsMap[sortedUsers[1].slack_id]?.total_shells_earned || 0)} shells`}
                   {sortBy === "hours" && `${Math.round((sortedUsers[1].coding_time_seconds || 0) / 3600)}h`}
                   {sortBy === "projects" && `${sortedUsers[1].projects_count || 0}`}
                 </div>
@@ -160,7 +170,7 @@ export default function LeaderboardPage() {
                   {sortedUsers[0].display_name || sortedUsers[0].slack_id}
                 </h3>
                 <div className="text-5xl font-bold text-yellow-700 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[0].projects_count || 0} projects`}
+                  {sortBy === "shells" && `${Math.round(shellsMap[sortedUsers[0].slack_id]?.total_shells_earned || 0)} shells`}
                   {sortBy === "hours" && `${Math.round((sortedUsers[0].coding_time_seconds || 0) / 3600)}h`}
                   {sortBy === "projects" && `${sortedUsers[0].projects_count || 0}`}
                 </div>
@@ -208,7 +218,7 @@ export default function LeaderboardPage() {
                   {sortedUsers[2].display_name || sortedUsers[2].slack_id}
                 </h3>
                 <div className="text-4xl font-bold text-orange-600 mb-2">
-                  {sortBy === "shells" && `${sortedUsers[2].projects_count || 0} projects`}
+                  {sortBy === "shells" && `${Math.round(shellsMap[sortedUsers[2].slack_id]?.total_shells_earned || 0)} shells`}
                   {sortBy === "hours" && `${Math.round((sortedUsers[2].coding_time_seconds || 0) / 3600)}h`}
                   {sortBy === "projects" && `${sortedUsers[2].projects_count || 0}`}
                 </div>
@@ -233,6 +243,7 @@ export default function LeaderboardPage() {
               const rank = index + 1;
               const medal = getMedalEmoji(rank);
               const hours = Math.round((user.coding_time_seconds || 0) / 3600);
+              const shellsEarned = Math.round(shellsMap[user.slack_id]?.total_shells_earned || 0);
 
               return (
                 <motion.div
@@ -292,12 +303,12 @@ export default function LeaderboardPage() {
                     {/* Stats */}
                     <div className="text-right">
                       <div className="text-3xl md:text-4xl font-bold text-vintage-brown mb-1">
-                        {sortBy === "shells" && (user.projects_count || 0)}
+                        {sortBy === "shells" && `${shellsEarned}`}
                         {sortBy === "hours" && `${hours}h`}
                         {sortBy === "projects" && (user.projects_count || 0)}
                       </div>
                       <div className="text-sm font-steven text-vintage-brown">
-                        {sortBy === "shells" && "Projects"}
+                        {sortBy === "shells" && "Shells Earned"}
                         {sortBy === "hours" && "Hours Worked"}
                         {sortBy === "projects" && "Projects Built"}
                       </div>

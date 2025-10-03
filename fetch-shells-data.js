@@ -8,7 +8,7 @@ async function fetchShellsData() {
     console.log('Fetching shells/leaderboard data...');
     const response = await fetch('https://explorpheus.hackclub.com/leaderboard', {
       headers: {
-        'Cookie': cookie,
+        'Cookie': COOKIE,
         'User-Agent': 'Mozilla/5.0'
       }
     });
