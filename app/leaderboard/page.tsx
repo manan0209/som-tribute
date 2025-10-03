@@ -13,20 +13,48 @@ const usersArray = Object.values(usersObj);
 const shellsArray = shellsData as Array<any>;
 const projectsArray = projectsData as Array<any>;
 
+// Check if user is banned (0 projects BUT has devlogs)
+const isBannedUser = (user: any) => {
+  const projectsCount = user.projects_count || 0;
+  const devlogsCount = user.devlogs_count || 0;
+  
+  return projectsCount === 0 && devlogsCount > 0;
+};
+
+// Check if user is inactive (0 projects AND 0 devlogs - skip completely)
+const isInactiveUser = (user: any) => {
+  const projectsCount = user.projects_count || 0;
+  const devlogsCount = user.devlogs_count || 0;
+  
+  return projectsCount === 0 && devlogsCount === 0;
+};
+
+// Check if user is admin (has admin badge)
+const isAdminUser = (user: any) => {
+  return user.badges && user.badges.some((badge: any) => 
+    badge.name === "<%= admin_tool do %>"
+  );
+};
+
+
+const activeUsersArray = usersArray.filter((user: any) => !isInactiveUser(user));
+
 const shellsMap = shellsArray.reduce((acc: any, shell: any) => {
   acc[shell.slack_id] = shell;
   return acc;
 }, {});
 
-// Create search index - runs once on load
+
 const createSearchIndex = () => {
   const index = new Map<number, string>();
   
-  usersArray.forEach((user: any) => {
+  activeUsersArray.forEach((user: any) => {
     const searchText = [
       user.display_name || '',
       user.slack_id || '',
-      user.bio || ''
+      user.bio || '',
+      isBannedUser(user) ? 'banned' : '',
+      isAdminUser(user) ? 'admin' : ''
     ].join(' ').toLowerCase();
     
     index.set(user.id, searchText);
@@ -44,7 +72,7 @@ export default function LeaderboardPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Debounce search input for smoother typing
+  
   useEffect(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -52,7 +80,7 @@ export default function LeaderboardPage() {
     
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-    }, 150); // 150ms debounce - feels instant but prevents excessive renders
+    }, 150);
     
     return () => {
       if (debounceTimerRef.current) {
@@ -61,9 +89,10 @@ export default function LeaderboardPage() {
     };
   }, [searchQuery]);
   
-  // Pre-compute sorted users (without search filter) - this is the global ranking
+  
   const allSortedUsers = useMemo(() => {
-    return [...usersArray].sort((a: any, b: any) => {
+    const validUsers = activeUsersArray.filter((u: any) => !isBannedUser(u));
+    return [...validUsers].sort((a: any, b: any) => {
       switch (sortBy) {
         case "shells":
           const aShells = shellsMap[a.slack_id]?.total_shells_earned || 0;
@@ -79,30 +108,53 @@ export default function LeaderboardPage() {
     });
   }, [sortBy]);
   
-  // Get user's global rank (not search rank)
+  
   const getUserRank = (user: any) => {
+    if (isBannedUser(user)) return null;
     return allSortedUsers.findIndex((u: any) => u.id === user.id) + 1;
   };
   
-  // Get user's projects
   const getUserProjects = (user: any) => {
     return projectsArray.filter((project: any) => project.slack_id === user.slack_id);
   };
   
-  // Ultra-fast search using pre-built index
+  // Show ALL users (banned and valid), and sort banned ones to the end
   const sortedUsers = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) {
-      return allSortedUsers;
+    let allUsers = activeUsersArray;
+    
+    
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
+      allUsers = activeUsersArray.filter((user: any) => {
+        const userSearchText = searchIndex.get(user.id);
+        return userSearchText && userSearchText.includes(query);
+      });
     }
     
-    const query = debouncedSearchQuery.toLowerCase();
     
-    // Use index for instant lookup - O(n) with early string termination
-    return allSortedUsers.filter((user: any) => {
-      const userSearchText = searchIndex.get(user.id);
-      return userSearchText && userSearchText.includes(query);
+    return [...allUsers].sort((a: any, b: any) => {
+      const aBanned = isBannedUser(a);
+      const bBanned = isBannedUser(b);
+      
+      
+      if (aBanned && !bBanned) return 1;
+      if (!aBanned && bBanned) return -1;
+      
+      
+      switch (sortBy) {
+        case "shells":
+          const aShells = shellsMap[a.slack_id]?.total_shells_earned || 0;
+          const bShells = shellsMap[b.slack_id]?.total_shells_earned || 0;
+          return bShells - aShells;
+        case "hours":
+          return (b.coding_time_seconds || 0) - (a.coding_time_seconds || 0);
+        case "projects":
+          return (b.projects_count || 0) - (a.projects_count || 0);
+        default:
+          return 0;
+      }
     });
-  }, [allSortedUsers, debouncedSearchQuery]);
+  }, [debouncedSearchQuery, sortBy]);
 
   const getMedalEmoji = (rank: number) => {
     if (rank === 1) return "";
@@ -120,7 +172,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-vintage-beige">
-      {/* Header */}
+      
       <header className="border-b-4 border-vintage-brown py-8 px-6 md:px-12 bg-vintage-beige-light">
         <div className="max-w-7xl mx-auto">
           <Link href="/" className="inline-block mb-4 text-vintage-brown hover:text-vintage-dark transition-colors">
@@ -172,7 +224,7 @@ export default function LeaderboardPage() {
             </button>
           </div>
           
-          {/* Search Bar */}
+          
           <div className="max-w-2xl mx-auto">
             <div className="relative">
               <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none text-2xl">
@@ -213,7 +265,7 @@ export default function LeaderboardPage() {
             </h2>
           
           <div className="grid md:grid-cols-3 gap-8 items-end">
-            {/* 2nd Place */}
+            
             {sortedUsers[1] && (
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -341,8 +393,10 @@ export default function LeaderboardPage() {
 
           <div className="space-y-4">
             {sortedUsers.slice(0, debouncedSearchQuery ? sortedUsers.length : 50).map((user: any, index: number) => {
+              const banned = isBannedUser(user);
+              const admin = isAdminUser(user);
               const globalRank = getUserRank(user); // Use global rank, not search position
-              const medal = getMedalEmoji(globalRank);
+              const medal = globalRank ? getMedalEmoji(globalRank) : null;
               const hours = Math.round((user.coding_time_seconds || 0) / 3600);
               const shellsEarned = Math.round(shellsMap[user.slack_id]?.total_shells_earned || 0);
 
@@ -354,16 +408,26 @@ export default function LeaderboardPage() {
                   transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.5) }}
                   onClick={() => setSelectedUser(user)}
                   className={`organic-card hover:scale-[1.01] transition-transform cursor-pointer ${
-                    globalRank <= 3 ? 'border-3' : ''
+                    banned ? 'bg-red-50 border-red-300' : 
+                    admin ? 'bg-pink-50 border-pink-300' :
+                    globalRank && globalRank <= 3 ? 'border-3' : ''
                   }`}
                 >
                   <div className="flex items-center gap-6">
                     {/* Rank */}
                     <div className="text-center min-w-[60px]">
-                      {medal ? (
+                      {banned ? (
+                        <div className="text-2xl font-bold text-red-600">
+                          BANNED
+                        </div>
+                      ) : admin ? (
+                        <div className="text-2xl font-bold text-pink-600">
+                          ADMIN
+                        </div>
+                      ) : medal ? (
                         <div className="text-5xl">{medal}</div>
                       ) : (
-                        <div className={`text-4xl font-bold ${getRankColor(globalRank)}`}>
+                        <div className={`text-4xl font-bold ${getRankColor(globalRank!)}`}>
                           #{globalRank}
                         </div>
                       )}
@@ -377,6 +441,8 @@ export default function LeaderboardPage() {
                         width={80}
                         height={80}
                         className={`rounded-full border-4 ${
+                          banned ? 'border-red-500 opacity-60' :
+                          admin ? 'border-pink-500' :
                           globalRank === 1 ? 'border-yellow-500' :
                           globalRank === 2 ? 'border-gray-400' :
                           globalRank === 3 ? 'border-orange-500' :
@@ -387,15 +453,30 @@ export default function LeaderboardPage() {
 
                     {/* User Info */}
                     <div className="flex-1">
-                      <h3 className="font-national-park text-2xl md:text-3xl font-bold text-vintage-dark mb-1">
-                        {user.display_name || user.slack_id}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className={`font-national-park text-2xl md:text-3xl font-bold ${
+                          banned ? 'text-red-700' : 
+                          admin ? 'text-pink-700' :
+                          'text-vintage-dark'
+                        }`}>
+                          {user.display_name || user.slack_id}
+                        </h3>
+                        {banned && (
+                          <span className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                            BANNED
+                          </span>
+                        )}
+                      </div>
                       {user.bio && (
-                        <p className="font-steven text-sm text-vintage-brown line-clamp-1 mb-2">
+                        <p className={`font-steven text-sm line-clamp-1 mb-2 ${
+                          banned ? 'text-red-600' : 'text-vintage-brown'
+                        }`}>
                           {user.bio}
                         </p>
                       )}
-                      <div className="flex flex-wrap gap-3 text-sm font-steven text-vintage-dark">
+                      <div className={`flex flex-wrap gap-3 text-sm font-steven ${
+                        banned ? 'text-red-700' : 'text-vintage-dark'
+                      }`}>
                         <span>{user.projects_count || 0} projects</span>
                         <span>{user.devlogs_count || 0} devlogs</span>
                         <span>{user.votes_count || 0} votes</span>
@@ -404,18 +485,22 @@ export default function LeaderboardPage() {
 
                     {/* Stats */}
                     <div className="text-right">
-                      <div className="text-3xl md:text-4xl font-bold text-vintage-brown mb-1">
+                      <div className={`text-3xl md:text-4xl font-bold mb-1 ${
+                        banned ? 'text-red-700' : 'text-vintage-brown'
+                      }`}>
                         {sortBy === "shells" && `${shellsEarned}`}
                         {sortBy === "hours" && `${hours}h`}
                         {sortBy === "projects" && (user.projects_count || 0)}
                       </div>
-                      <div className="text-sm font-steven text-vintage-brown">
+                      <div className={`text-sm font-steven ${
+                        banned ? 'text-red-600' : 'text-vintage-brown'
+                      }`}>
                         {sortBy === "shells" && "Shells Earned"}
                         {sortBy === "hours" && "Hours Worked"}
                         {sortBy === "projects" && "Projects Built"}
                       </div>
                       
-                      {/* Badges */}
+                      
                       {user.badges && user.badges.length > 0 && (
                         <div className="mt-2 flex justify-end gap-1">
                           {user.badges.slice(0, 3).map((badge: any, idx: number) => {
@@ -557,7 +642,7 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
 
-                {/* Stats Grid */}
+               
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                   <div className="organic-card text-center">
                     <div className="text-3xl font-bold text-vintage-brown">
@@ -625,7 +710,7 @@ export default function LeaderboardPage() {
                   );
                 })()}
 
-                {/* Shell Transactions */}
+                
                 {shellsMap[selectedUser.slack_id]?.payouts && (
                   <div>
                     <h3 className="newspaper-heading mb-4">
