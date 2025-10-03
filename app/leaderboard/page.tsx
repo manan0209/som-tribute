@@ -711,87 +711,207 @@ export default function LeaderboardPage() {
                 })()}
 
                 
-                {shellsMap[selectedUser.slack_id]?.payouts && (
-                  <div>
-                    <h3 className="newspaper-heading mb-4">
-                      Shell Transactions ({shellsMap[selectedUser.slack_id].payouts.length})
-                    </h3>
-                    <div className="space-y-2 max-h-80 overflow-y-auto">
-                      {shellsMap[selectedUser.slack_id].payouts
-                        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                        .slice(0, 20)
-                        .map((payout: any, idx: number) => {
-                          const amount = parseFloat(payout.amount);
-                          const isPositive = amount > 0;
-                          
-                          // Better transaction categorization
-                          let category = '';
-                          let icon = '';
-                          
-                          if (payout.type === 'ShipEvent') {
-                            category = 'Ship Event Payout';
-                            icon = '🚢';
-                          } else if (payout.type === 'ShopOrder') {
-                            category = 'Shop Order';
-                            icon = '🛍️';
-                          } else if (payout.type === 'User') {
-                            if (isPositive) {
-                              category = 'Refund/Payout by Admin';
-                              icon = '💰';
+                {shellsMap[selectedUser.slack_id]?.payouts && (() => {
+                  // Shop item price mapping (from summer-of-making-main/db/seeds/mock_shop_items.rb)
+                  // Base prices - actual prices may vary by region (US, EU, IN, CA, AU, XX) with offsets
+                  const shopItemsByPrice: Record<number, string[]> = {
+                    0: ["Free Stickers!"],
+                    5: ["Spider"],
+                    10: ["Graphic design is my passion"],
+                    15: ["username flair"],
+                    20: ["preferred customer", "(FLASH SALE) Teardown"],
+                    25: ["Pile of Stickers"],
+                    27: ["random piece of paper from HQ?", "kestrel heidi sticker sheet"],
+                    30: ["b o n g"],
+                    32: ["TIS-100"],
+                    33: ["Geometry Dash"],
+                    35: ["64GB USB Drive", "Cloudflare credits", "AI Usage Credits"],
+                    40: ["Summer of Making Blue"],
+                    41: ["Hot Glue Gun"],
+                    45: ["Domain grant"],
+                    47: ["CH341A Programmer"],
+                    50: ["Server hosting credits", "Orpheus Pico! (preorder)", "128GB USB Drive", "Logic Analyzer"],
+                    55: ["Cat Printer"],
+                    60: ["Pico-8 License"],
+                    67: ["Allen Wrench"],
+                    70: ["family guy seasons 1 & 2 on dvd"],
+                    77: ["Digital Calipers"],
+                    79: ["E-Fidget"],
+                    80: ["Voxatron License"],
+                    91: ["Bloons TD 6 (Steam)"],
+                    98: ["Hydroneer"],
+                    100: ["Sunglasses", "Raspberry Pi Zero 2 W", "sketch from msw", "Pocket Watcher", "cwalker toe pic card (signed)", "DigiKey/LCSC Credit", "256GB USB Drive"],
+                    103: ["20 bucks in Framework credit"],
+                    110: ["256GB microSD card + adapter"],
+                    111: ["Smolhaj"],
+                    120: ["USB C Cable + Wall Adapter"],
+                    130: ["Bambu Lab Credits"],
+                    132: ["Qiyi XMD XT3 speedcube"],
+                    137: ["Dupont Crimping Tool Kit", "shapez 2"],
+                    144: ["Pinecil"],
+                    150: ["Offshore Bank Account", "a physical copy of why's (poignant) guide to ruby"],
+                    160: ["Gold Verified"],
+                    170: ["25 bucks in IKEA credit"],
+                    175: ["Lexaloffle Games bundle", "Factorio"],
+                    180: ["Brother Label Maker"],
+                    216: ["Mullvad VPN 6 Month Voucher"],
+                    220: ["Squishmallow"],
+                    222: ["full-size blahaj."],
+                    225: ["Proxmark 3 Easy"],
+                    260: ["Satisfactory"],
+                    300: ["Yubikey USB-A"],
+                    302: ["Waveshare 7.5inch E-Ink Display"],
+                    323: ["Baofeng UV-5R (2 pack)"],
+                    330: ["Yubikey USB-C"],
+                    335: ["min(amame) Parts Kit"],
+                    360: ["CMF Buds Pro 2"],
+                    467: ["Seagate 2TB external HDD"],
+                    570: ["Logitech MX Master 3S"],
+                    580: ["Thermal Imager"],
+                    600: ["K4 desktop laser engraver"],
+                    607: ["Raspberry Pi 5"],
+                    650: ["head(amame) Parts Kit"],
+                    712: ["Glasgow Interface Explorer"],
+                    750: ["Logitech G Pro X Superlight"],
+                    770: ["XPPen Deco Pro MW"],
+                    950: ["Flipper Zero"],
+                    1000: ["I am Rich"],
+                    1020: ["Bose QuietComfort 45"],
+                    1125: ["Cricut Explore 3", "Bambu A1 mini Printer"],
+                    1265: ["Playdate"],
+                    1500: ["AirPods Pro 2"],
+                    1507: ["100MHZ Oscilloscope"],
+                    1540: ["ThinkPad X1 Carbon 6th Gen (Renewed)", "CMF Phone 2 Pro (White)", "CMF Phone 2 Pro (Black)"],
+                    1740: ["Lenovo ThinkPad T14 14\" Laptop"],
+                    1750: ["Bambu Labs A1", "$500 in Amp credit"],
+                    1800: ["Lenovo Thinkpad X1 Carbon Gen 8 (Refurbished)", "Nebula.tv Lifetime subscription"],
+                    2550: ["Lenovo V15 AMD Ryzen 7 7730U 15.6\""],
+                    3400: ["iPad + Apple Pencil"],
+                    3540: ["Steam Deck 512GB OLED"],
+                    3600: ["HP Victus, AMD Ryzen 5 5600H, NVIDIA RTX 3050"],
+                    4050: ["M4 Mac Mini"],
+                    4499: ["Framework Laptop 12"],
+                    5000: ["Prusa MK4S 3D Printer"],
+                    5512: ["13-inch M4 MacBook Air"],
+                    8995: ["MacBook Pro"]
+                  };
+
+                  // Helper function to find item by price with fuzzy matching for regional variants
+                  const findItemByPrice = (cost: number): { items: string[], isExact: boolean } | null => {
+                    // Exact match
+                    if (shopItemsByPrice[cost]) {
+                      return { items: shopItemsByPrice[cost], isExact: true };
+                    }
+                    
+                    // Regional pricing: try to find base price within ±30% range
+                    // (regional offsets typically add/subtract up to 30% of base price)
+                    const prices = Object.keys(shopItemsByPrice).map(Number).sort((a, b) => a - b);
+                    
+                    for (const basePrice of prices) {
+                      const maxOffset = Math.max(30, Math.ceil(basePrice * 0.3)); // At least ±30 shells
+                      if (cost >= basePrice - maxOffset && cost <= basePrice + maxOffset) {
+                        const diff = Math.abs(cost - basePrice);
+                        // Only match if difference is reasonable (not more than 30% or 50 shells, whichever is larger)
+                        if (diff <= Math.max(50, basePrice * 0.3)) {
+                          return { items: shopItemsByPrice[basePrice], isExact: false };
+                        }
+                      }
+                    }
+                    
+                    return null;
+                  };
+
+                  return (
+                    <div>
+                      <h3 className="newspaper-heading mb-4">
+                        Shell Transactions ({shellsMap[selectedUser.slack_id].payouts.length})
+                      </h3>
+                      <div className="space-y-2 max-h-80 overflow-y-auto">
+                        {shellsMap[selectedUser.slack_id].payouts
+                          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                          .map((payout: any, idx: number) => {
+                            const amount = parseFloat(payout.amount);
+                            const isPositive = amount > 0;
+                            
+                            // Better transaction categorization
+                            let category = '';
+                            let icon = '';
+                            
+                            if (payout.type === 'ShipEvent') {
+                              category = 'Ship Event Payout';
+                              icon = '🚢';
+                            } else if (payout.type === 'ShopOrder') {
+                              // Try to match the amount to a shop item
+                              const cost = Math.abs(amount);
+                              const match = findItemByPrice(cost);
+                              
+                              if (match) {
+                                const itemName = match.items[0];
+                                const suffix = match.items.length > 1 ? ' (or similar)' : '';
+                                const priceNote = !match.isExact ? ` ~${cost}ⓢ` : '';
+                                category = `Shop Order - ${itemName}${suffix}${priceNote}`;
+                              } else {
+                                category = 'Shop Order';
+                              }
+                              icon = '🛍️';
+                            } else if (payout.type === 'User') {
+                              if (isPositive) {
+                                category = 'Refund/Payout by Admin';
+                                icon = '💰';
+                              } else {
+                                category = 'Admin Deduction';
+                                icon = '⚠️';
+                              }
                             } else {
-                              category = 'Admin Deduction';
-                              icon = '⚠️';
+                              // Fallback for unknown types
+                              category = payout.type || 'Unknown';
+                              icon = '❓';
                             }
-                          } else {
-                            // Fallback for unknown types
-                            category = payout.type || 'Unknown';
-                            icon = '❓';
-                          }
-                          
-                          return (
-                            <div
-                              key={idx}
-                              className={`flex items-center justify-between p-3 rounded-lg border-2 ${
-                                isPositive
-                                  ? 'bg-green-50 border-green-300'
-                                  : 'bg-red-50 border-red-300'
-                              }`}
-                            >
-                              <div className="flex-1">
-                                <div className="font-steven font-bold">
-                                  {icon} {category}
+                            
+                            return (
+                              <div
+                                key={idx}
+                                className={`flex items-center justify-between p-3 rounded-lg border-2 ${
+                                  isPositive
+                                    ? 'bg-green-50 border-green-300'
+                                    : 'bg-red-50 border-red-300'
+                                }`}
+                              >
+                                <div className="flex-1">
+                                  <div className="font-steven font-bold">
+                                    {icon} {category}
+                                  </div>
+                                  <div className="text-xs text-vintage-brown">
+                                    {new Date(payout.created_at).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </div>
                                 </div>
-                                <div className="text-xs text-vintage-brown">
-                                  {new Date(payout.created_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
+                                <div className={`text-2xl font-bold ${
+                                  isPositive ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {isPositive ? '+' : ''}{amount}
                                 </div>
                               </div>
-                              <div className={`text-2xl font-bold ${
-                                isPositive ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {isPositive ? '+' : ''}{amount}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      {shellsMap[selectedUser.slack_id].payouts.length > 20 && (
-                        <p className="text-center font-steven text-vintage-brown">
-                          ...and {shellsMap[selectedUser.slack_id].payouts.length - 20} more transactions
-                        </p>
-                      )}
-                    </div>
-                    <div className="mt-4 p-4 bg-vintage-beige-light rounded-lg border-2 border-vintage-brown">
-                      <div className="flex justify-between items-center">
-                        <span className="font-steven text-lg">Current Balance:</span>
-                        <span className="font-national-park text-2xl font-bold text-vintage-brown">
-                          {shellsMap[selectedUser.slack_id].current_shells} shells
-                        </span>
+                            );
+                          })}
                       </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Current Balance Section */}
+                {shellsMap[selectedUser.slack_id] && (
+                  <div className="mt-4 p-4 bg-vintage-beige-light rounded-lg border-2 border-vintage-brown">
+                    <div className="flex justify-between items-center">
+                      <span className="font-steven text-lg">Current Balance:</span>
+                      <span className="font-national-park text-2xl font-bold text-vintage-brown">
+                        {shellsMap[selectedUser.slack_id].current_shells} shells
+                      </span>
                     </div>
                   </div>
                 )}
