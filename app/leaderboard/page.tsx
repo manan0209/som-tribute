@@ -723,6 +723,31 @@ export default function LeaderboardPage() {
                         .map((payout: any, idx: number) => {
                           const amount = parseFloat(payout.amount);
                           const isPositive = amount > 0;
+                          
+                          // Better transaction categorization
+                          let category = '';
+                          let icon = '';
+                          
+                          if (payout.type === 'ShipEvent') {
+                            category = 'Ship Event Payout';
+                            icon = '🚢';
+                          } else if (payout.type === 'ShopOrder') {
+                            category = 'Shop Order';
+                            icon = '🛍️';
+                          } else if (payout.type === 'User') {
+                            if (isPositive) {
+                              category = 'Refund/Payout by Admin';
+                              icon = '💰';
+                            } else {
+                              category = 'Admin Deduction';
+                              icon = '⚠️';
+                            }
+                          } else {
+                            // Fallback for unknown types
+                            category = payout.type || 'Unknown';
+                            icon = '❓';
+                          }
+                          
                           return (
                             <div
                               key={idx}
@@ -734,7 +759,7 @@ export default function LeaderboardPage() {
                             >
                               <div className="flex-1">
                                 <div className="font-steven font-bold">
-                                  {payout.type === 'User' ? '💰 Earned' : '🛍️ Shop Order'}
+                                  {icon} {category}
                                 </div>
                                 <div className="text-xs text-vintage-brown">
                                   {new Date(payout.created_at).toLocaleDateString('en-US', {
