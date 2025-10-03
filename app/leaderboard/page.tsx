@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,38 +18,54 @@ const shellsMap = shellsArray.reduce((acc: any, shell: any) => {
   return acc;
 }, {});
 
+// Create search index - runs once on load
+const createSearchIndex = () => {
+  const index = new Map<number, string>();
+  
+  usersArray.forEach((user: any) => {
+    const searchText = [
+      user.display_name || '',
+      user.slack_id || '',
+      user.bio || ''
+    ].join(' ').toLowerCase();
+    
+    index.set(user.id, searchText);
+  });
+  
+  return index;
+};
+
+const searchIndex = createSearchIndex();
+
 export default function LeaderboardPage() {
   const [sortBy, setSortBy] = useState<"shells" | "hours" | "projects">("hours");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Get user's rank in current sorting
-  const getUserRank = (user: any) => {
-    return sortedUsers.findIndex((u: any) => u.id === user.id) + 1;
-  };
-  
-  // Get user's projects
-  const getUserProjects = (user: any) => {
-    return projectsArray.filter((project: any) => project.slack_id === user.slack_id);
-  };
-  
-  const sortedUsers = useMemo(() => {
-    let filtered = usersArray;
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = usersArray.filter((user: any) => {
-        const displayName = (user.display_name || '').toLowerCase();
-        const slackId = (user.slack_id || '').toLowerCase();
-        const bio = (user.bio || '').toLowerCase();
-        return displayName.includes(query) || slackId.includes(query) || bio.includes(query);
-      });
+  // Debounce search input for smoother typing
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
     
-    // Then sort
-    return [...filtered].sort((a: any, b: any) => {
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 150); // 150ms debounce - feels instant but prevents excessive renders
+    
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchQuery]);
+  
+  // Pre-compute sorted users (without search filter) - this is the global ranking
+  const allSortedUsers = useMemo(() => {
+    return [...usersArray].sort((a: any, b: any) => {
       switch (sortBy) {
         case "shells":
-          // Use real shells earned data
           const aShells = shellsMap[a.slack_id]?.total_shells_earned || 0;
           const bShells = shellsMap[b.slack_id]?.total_shells_earned || 0;
           return bShells - aShells;
@@ -61,7 +77,32 @@ export default function LeaderboardPage() {
           return 0;
       }
     });
-  }, [sortBy, searchQuery]);
+  }, [sortBy]);
+  
+  // Get user's global rank (not search rank)
+  const getUserRank = (user: any) => {
+    return allSortedUsers.findIndex((u: any) => u.id === user.id) + 1;
+  };
+  
+  // Get user's projects
+  const getUserProjects = (user: any) => {
+    return projectsArray.filter((project: any) => project.slack_id === user.slack_id);
+  };
+  
+  // Ultra-fast search using pre-built index
+  const sortedUsers = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return allSortedUsers;
+    }
+    
+    const query = debouncedSearchQuery.toLowerCase();
+    
+    // Use index for instant lookup - O(n) with early string termination
+    return allSortedUsers.filter((user: any) => {
+      const userSearchText = searchIndex.get(user.id);
+      return userSearchText && userSearchText.includes(query);
+    });
+  }, [allSortedUsers, debouncedSearchQuery]);
 
   const getMedalEmoji = (rank: number) => {
     if (rank === 1) return "";
@@ -154,7 +195,7 @@ export default function LeaderboardPage() {
                 </button>
               )}
             </div>
-            {searchQuery && (
+            {debouncedSearchQuery && (
               <p className="text-center mt-2 font-steven text-vintage-brown">
                 Found {sortedUsers.length} maker{sortedUsers.length !== 1 ? 's' : ''}
               </p>
@@ -164,7 +205,7 @@ export default function LeaderboardPage() {
       </section>
 
       {/* Podium - Top 3 - Only show when not searching */}
-      {!searchQuery && (
+      {!debouncedSearchQuery && (
         <section className="py-12 px-6 md:px-12 bg-vintage-beige-light">
           <div className="max-w-5xl mx-auto">
             <h2 className="newspaper-heading text-center mb-12">
@@ -295,13 +336,13 @@ export default function LeaderboardPage() {
       <section className="py-12 px-6 md:px-12">
         <div className="max-w-5xl mx-auto">
           <h2 className="newspaper-heading text-center mb-8">
-            {searchQuery ? 'Search Results' : 'Complete Rankings'}
+            {debouncedSearchQuery ? 'Search Results' : 'Complete Rankings'}
           </h2>
 
           <div className="space-y-4">
-            {sortedUsers.slice(0, searchQuery ? sortedUsers.length : 50).map((user: any, index: number) => {
-              const rank = index + 1;
-              const medal = getMedalEmoji(rank);
+            {sortedUsers.slice(0, debouncedSearchQuery ? sortedUsers.length : 50).map((user: any, index: number) => {
+              const globalRank = getUserRank(user); // Use global rank, not search position
+              const medal = getMedalEmoji(globalRank);
               const hours = Math.round((user.coding_time_seconds || 0) / 3600);
               const shellsEarned = Math.round(shellsMap[user.slack_id]?.total_shells_earned || 0);
 
@@ -310,10 +351,10 @@ export default function LeaderboardPage() {
                   key={user.id}
                   initial={{ opacity: 0, x: -50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.02 }}
+                  transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.5) }}
                   onClick={() => setSelectedUser(user)}
                   className={`organic-card hover:scale-[1.01] transition-transform cursor-pointer ${
-                    rank <= 3 ? 'border-3' : ''
+                    globalRank <= 3 ? 'border-3' : ''
                   }`}
                 >
                   <div className="flex items-center gap-6">
@@ -322,8 +363,8 @@ export default function LeaderboardPage() {
                       {medal ? (
                         <div className="text-5xl">{medal}</div>
                       ) : (
-                        <div className={`text-4xl font-bold ${getRankColor(rank)}`}>
-                          #{rank}
+                        <div className={`text-4xl font-bold ${getRankColor(globalRank)}`}>
+                          #{globalRank}
                         </div>
                       )}
                     </div>
@@ -336,9 +377,9 @@ export default function LeaderboardPage() {
                         width={80}
                         height={80}
                         className={`rounded-full border-4 ${
-                          rank === 1 ? 'border-yellow-500' :
-                          rank === 2 ? 'border-gray-400' :
-                          rank === 3 ? 'border-orange-500' :
+                          globalRank === 1 ? 'border-yellow-500' :
+                          globalRank === 2 ? 'border-gray-400' :
+                          globalRank === 3 ? 'border-orange-500' :
                           'border-vintage-brown'
                         }`}
                       />
