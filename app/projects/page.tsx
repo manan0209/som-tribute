@@ -1,24 +1,58 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import projectsData from "@/data/som-projects.json";
 import usersData from "@/data/som-users.json";
 
 const projects = projectsData as any[];
 const usersObj = usersData as Record<string, any>;
+
 // Convert users object to lookup by slack_id
 const usersBySlackId = Object.values(usersObj).reduce((acc: any, user: any) => {
   acc[user.slack_id] = user;
   return acc;
 }, {});
 
+// Create indexed search data structure for blazing fast search
+const createSearchIndex = () => {
+  const index: Record<string, any[]> = {};
+  
+  projects.forEach((project: any) => {
+    const user = usersBySlackId[project.slack_id];
+    const searchText = [
+      project.title,
+      project.description?.replace(/<[^>]*>/g, ''),
+      project.category,
+      user?.display_name,
+      user?.slack_display_name,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    // Index by words for instant lookup
+    const words = searchText.split(/\s+/);
+    words.forEach(word => {
+      if (word.length > 2) {
+        if (!index[word]) index[word] = [];
+        if (!index[word].includes(project.id)) {
+          index[word].push(project.id);
+        }
+      }
+    });
+  });
+  
+  return index;
+};
+
+const searchIndex = createSearchIndex();
+
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"newest" | "hours" | "devlogs">("devlogs");
+  const [displayLimit, setDisplayLimit] = useState(24); // Show only 24 initially (3 rows)
 
   // Get all unique categories
   const allCategories = useMemo(() => {
@@ -29,17 +63,43 @@ export default function ProjectsPage() {
     return Array.from(categories).sort();
   }, []);
 
-  // Filter and sort projects
+  // Blazing fast indexed search
   const filteredProjects = useMemo(() => {
-    let filtered = projects.filter((p: any) => p.title && p.description);
+    let filtered = [...projects];
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter((p: any) => 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    // Fast indexed search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const queryWords = query.split(/\s+/).filter(w => w.length > 2);
+      
+      if (queryWords.length > 0) {
+        // Get project IDs that match any search word
+        const matchingIds = new Set<number>();
+        queryWords.forEach(word => {
+          // Find all indexed words that start with the search word
+          Object.keys(searchIndex).forEach(indexedWord => {
+            if (indexedWord.startsWith(word)) {
+              searchIndex[indexedWord].forEach(id => matchingIds.add(id));
+            }
+          });
+        });
+        
+        // Filter to only matching projects
+        filtered = filtered.filter(p => matchingIds.has(p.id));
+        
+        // Fallback to full-text search if indexed search returns nothing
+        if (filtered.length === 0) {
+          filtered = projects.filter((p: any) => {
+            const searchText = [
+              p.title,
+              p.description?.replace(/<[^>]*>/g, ''),
+              p.category,
+              usersBySlackId[p.slack_id]?.display_name,
+            ].filter(Boolean).join(' ').toLowerCase();
+            return searchText.includes(query);
+          });
+        }
+      }
     }
 
     // Category filter
@@ -63,6 +123,11 @@ export default function ProjectsPage() {
 
     return filtered;
   }, [searchQuery, selectedCategory, sortBy]);
+
+  // Limit displayed projects for performance
+  const displayedProjects = useMemo(() => {
+    return filteredProjects.slice(0, displayLimit);
+  }, [filteredProjects, displayLimit]);
 
   return (
     <div className="min-h-screen bg-vintage-beige">
@@ -178,38 +243,26 @@ export default function ProjectsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((project: any, index: number) => {
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {displayedProjects.map((project: any) => {
                 const user = usersBySlackId[project.slack_id];
                 const hours = Math.round((project.total_seconds_coded || 0) / 3600);
                 
                 return (
-                  <motion.div
+                  <div
                     key={project.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                    className="organic-card hover:scale-[1.02] transition-transform"
+                    className="organic-card hover:scale-[1.02] transition-transform cursor-pointer"
+                    onClick={() => window.open(`https://summer.hackclub.com/projects/${project.id}`, '_blank')}
                   >
-                    {/* User Info */}
+                    {/* User Info - Text Only for Performance */}
                     {user && (
-                      <div className="flex items-center gap-3 mb-4">
-                        {user.avatar && (
-                          <Image
-                            src={user.avatar}
-                            alt={user.display_name || 'User'}
-                            width={40}
-                            height={40}
-                            className="rounded-full border-2 border-vintage-brown"
-                          />
-                        )}
-                        <div>
-                          <div className="font-steven font-bold text-vintage-dark">
-                            {user.display_name || user.slack_id}
-                          </div>
-                          <div className="text-sm text-vintage-brown">
-                            {user.projects_count || 0} projects
-                          </div>
+                      <div className="mb-4">
+                        <div className="font-steven font-bold text-vintage-dark">
+                          by {user.display_name || user.slack_id}
+                        </div>
+                        <div className="text-sm text-vintage-brown">
+                          {user.projects_count || 0} projects
                         </div>
                       </div>
                     )}
@@ -261,6 +314,7 @@ export default function ProjectsPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-center bg-vintage-brown text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown-dark transition-colors"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           GitHub
                         </a>
@@ -271,6 +325,7 @@ export default function ProjectsPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-center bg-vintage-brown-light text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown transition-colors"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           Demo
                         </a>
@@ -281,15 +336,29 @@ export default function ProjectsPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 text-center bg-vintage-brown-light text-vintage-beige-light px-4 py-2 rounded-full font-steven font-bold hover:bg-vintage-brown transition-colors"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           README
                         </a>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
+            
+            {/* Load More Button */}
+            {displayedProjects.length < filteredProjects.length && (
+              <div className="text-center mt-12">
+                <button
+                  onClick={() => setDisplayLimit(prev => prev + 24)}
+                  className="px-8 py-4 bg-vintage-brown text-vintage-beige-light rounded-full font-steven text-lg font-bold hover:bg-vintage-brown-dark transition-colors"
+                >
+                  Load More Projects ({filteredProjects.length - displayedProjects.length} remaining)
+                </button>
+              </div>
+            )}
+          </>
           )}
         </div>
       </section>

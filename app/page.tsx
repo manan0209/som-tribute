@@ -49,14 +49,15 @@ const validUsers = activeUsers.filter((u: any) => !isBannedUser(u));
 export default function Home() {
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
 
-  
-  const featuredProjects = projects
+  // Specific featured projects by ID
+  const featuredProjectIds = [1014, 7236, 12599, 1763, 6737, 12715];
+  const featuredProjects = featuredProjectIds
+    .map(id => projects.find(p => p.id === id))
     .filter(p => {
+      if (!p) return false;
       const user = usersBySlackId[p.slack_id];
-      return p.devlogs_count > 5 && p.description && user && !isBannedUser(user);
-    })
-    .sort((a, b) => b.devlogs_count - a.devlogs_count)
-    .slice(0, 6);
+      return p.description && user && !isBannedUser(user);
+    });
   
   // Get top makers by shells earned (show all including banned, but banned go to bottom, skip inactive)
   const topMakers = shellsArray

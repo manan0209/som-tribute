@@ -27,6 +27,18 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'summer.hackclub.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloud-*.vercel.app',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
