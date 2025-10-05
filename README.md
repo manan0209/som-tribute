@@ -4,6 +4,14 @@ A personal tribute to Hack Club's Summer of Making 2025. This project celebrates
 
 **Live Site:** [https://somwrapup.vercel.app/](https://somwrapup.vercel.app/)
 
+## Screenshots
+
+![SOM Tribute Homepage](som1.png)
+*Homepage with som aesthetics*
+
+![SOM Leaderboard](som2.png)
+*Leaderboard with rankings and user search*
+
 ## About This Project
 
 This is my tribute to Summer of Making, built with real data from the SOM platform. The site features a retro magazine aesthetic that captures the creative spirit of the program.
@@ -42,27 +50,13 @@ This project fetches real data from the official Summer of Making API:
 - `/users` - User profiles, badges, and achievements
 - `/comments` - Community comments on projects
 
-All data is pre-fetched and stored locally in JSON files for optimal performance. The data includes complete transaction histories, accurate shell calculations, and comprehensive project information.
+All data is pre fetched and stored locally in JSON files for optimal performance. The data includes complete transaction histories, accurate shell calculations, and comprehensive project information.
 
-## Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-Open http://localhost:3000 to view the site.
 
 ## Features
 
 ### Leaderboard
-- Real-time rankings by shells earned, hours worked, and projects shipped
+- Real time rankings by shells earned, hours worked, and projects shipped
 - Blazing fast indexed search across 1,500+ users
 - Accurate shell calculations (total earned vs current balance)
 - Detailed user profiles with transaction history and badges
@@ -77,26 +71,8 @@ Open http://localhost:3000 to view the site.
 
 ### Homepage
 - Overview statistics and featured content
-- Magazine-style layout with retro aesthetic
+- Magazine style layout with retro aesthetic
 - Quick navigation to all sections
-
-## Project Structure
-
-```
-som-tribute/
-├── app/                    # Next.js pages
-│   ├── page.tsx           # Homepage
-│   ├── leaderboard/       # Rankings and user profiles
-│   ├── projects/          # Project gallery
-│   ├── casino/            # Casino game (WIP)
-│   └── timeline/          # Timeline (WIP)
-├── components/            # React components
-├── data/                  # JSON data files
-├── lib/                   # Utilities and helpers
-├── public/                # Static assets
-├── fetch-all-data.js      # Script to fetch data from API
-└── fetch-shells-data.js   # Script to fetch shell data
-```
 
 ## Design
 
@@ -106,8 +82,6 @@ The site features a vintage magazine aesthetic with:
 - Organic card layouts
 - Paper textures and retro styling
 - Smooth animations
-
-## Acknowledgments
 
 Built as a tribute to Summer of Making 2025 and the incredible Hack Club community. Thank you to all the makers who participated and made this summer special.
 
